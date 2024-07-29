@@ -46,24 +46,21 @@ def check_or_create_tax_template(vat_percentage, docname, doctype,row):
 def apply_item_tax_template_on_item(item_code, template_name, tax_category):
     # Fetch the item document using the provided item code
     item = frappe.get_doc('Item', item_code)
+    for tax in item.taxes:
+        if tax.item_tax_template == template_name and tax.tax_category == tax_category:
+            # frappe.msgprint(f"Tax template '{template_name}' with category '{tax_category}' already exists for item '{item_code}'")
+            return
     
-    # Check if the item has a 'taxes' field and if the specific tax details already exist
-    if item.get('taxes'):
-        # Check for duplicates
-        for tax in item.taxes:
-            if tax.item_tax_template == template_name and tax.tax_category == tax_category:
-                # frappe.msgprint(f"Tax template '{template_name}' with category '{tax_category}' already exists for item '{item_code}'")
-                return
-        
-        # Append new tax details if no duplicates found
-        item.append('taxes', {
-            'item_tax_template': template_name,
-            'tax_category': tax_category,
-            'valid_from': frappe.utils.getdate()
-        })
-        
-        # Save the updated item document
-        item.save()
+    # Append new tax details if no duplicates found
+    item.append('taxes', {
+        'item_tax_template': template_name,
+        'tax_category': tax_category,
+        'valid_from': frappe.utils.getdate()
+    })
+    
+    # Save the updated item document
+    item.save()
+
 
 
 

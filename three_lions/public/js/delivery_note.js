@@ -1,18 +1,7 @@
-frappe.ui.form.on('Sales Order', {
-    refresh: function(frm) {
-        if (frm.doc.custom_ref_no) {
-            frm.set_df_property("custom_qtn_ref_no", "hidden", 1);
-        } else {
-            frm.set_df_property("custom_qtn_ref_no", "hidden", 0);
-        }
-    }
-});
 
 
 
-
-
-frappe.ui.form.on('Sales Order Item', {
+frappe.ui.form.on('Delivery Note Item', {
     custom_vat: function(frm, cdt, cdn) {
         let row = locals[cdt][cdn];
         if (row.custom_vat) {
@@ -37,4 +26,3 @@ frappe.ui.form.on('Sales Order Item', {
         }
     }
 });
-

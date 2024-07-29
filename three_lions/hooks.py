@@ -32,7 +32,11 @@ app_license = "MIT"
 doctype_js = {"Quotation" : "public/js/quotation.js",
 			"Leave Application" : "public/js/leave_application.js",
 			"Opportunity" : "public/js/enquiry_from.js",
-			"Sales Order" : "public/js/sales_order.js"
+			"Sales Order" : "public/js/sales_order.js",
+			"Delivery Note" : "public/js/delivery_note.js",
+			"Sales Invoice" : "public/js/sales_invoice.js",
+			"Material Request" : "public/js/material_request.js",
+			"Purchase Order" : "public/js/purchase_order.js"
 			}
 # doctype_list_js = {"doctype" : "public/js/doctype_list.js"}
 # doctype_tree_js = {"doctype" : "public/js/doctype_tree.js"}
