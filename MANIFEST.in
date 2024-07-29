@@ -1,0 +1,18 @@
+include MANIFEST.in
+include requirements.txt
+include *.json
+include *.md
+include *.py
+include *.txt
+recursive-include three_lions *.css
+recursive-include three_lions *.csv
+recursive-include three_lions *.html
+recursive-include three_lions *.ico
+recursive-include three_lions *.js
+recursive-include three_lions *.json
+recursive-include three_lions *.md
+recursive-include three_lions *.png
+recursive-include three_lions *.py
+recursive-include three_lions *.svg
+recursive-include three_lions *.txt
+recursive-exclude three_lions *.pyc
