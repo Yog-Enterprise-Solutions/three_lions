@@ -15,7 +15,9 @@ frappe.ui.form.on('Sales Invoice Item', {
                 callback: function(response) {
                     if (response.message) {
                         row.item_tax_template = response.message;
-                        frm.refresh_field('items');  // Assuming 'items' is the field name for the child table
+                        frm.refresh_field('items'); 
+                        frm.save()
+                         // Assuming 'items' is the field name for the child table
                         // frappe.msgprint(__('Tax Template processed successfully.'));
                     }
                 }
