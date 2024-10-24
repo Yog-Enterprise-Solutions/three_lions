@@ -1,0 +1,82 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "ACT-RENT-.####",
+ "creation": "2024-09-03 13:47:00.343229",
+ "default_view": "List",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "asset_name",
+  "column_break_2k3z8",
+  "asset_quantity",
+  "section_break_jgnkw",
+  "asset_rental_table",
+  "amended_from"
+ ],
+ "fields": [
+  {
+   "fieldname": "asset_name",
+   "fieldtype": "Link",
+   "label": "Asset Name",
+   "options": "Asset"
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended From",
+   "no_copy": 1,
+   "options": "Asset Rental",
+   "print_hide": 1,
+   "read_only": 1,
+   "search_index": 1
+  },
+  {
+   "fieldname": "column_break_2k3z8",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "asset_rental_table",
+   "fieldtype": "Table",
+   "label": "Asset Rental table",
+   "options": "Asset Rental table"
+  },
+  {
+   "fieldname": "section_break_jgnkw",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fetch_from": "asset_name.asset_quantity",
+   "fieldname": "asset_quantity",
+   "fieldtype": "Data",
+   "label": "Asset Quantity"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "is_submittable": 1,
+ "links": [],
+ "modified": "2024-09-16 16:05:57.183767",
+ "modified_by": "Administrator",
+ "module": "Three Lions",
+ "name": "Asset Rental",
+ "naming_rule": "Expression (old style)",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

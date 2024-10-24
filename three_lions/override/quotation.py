@@ -59,7 +59,9 @@ def apply_item_tax_template_on_item(item_code, template_name, tax_category):
     })
     
     # Save the updated item document
+
     item.save()
+
 
 
 

@@ -1,5 +1,6 @@
 frappe.ui.form.on('Sales Order', {
     refresh: function(frm) {
+        console.log('hello')
         if (frm.doc.custom_ref_no) {
             frm.set_df_property("custom_qtn_ref_no", "hidden", 1);
         } else {
@@ -30,9 +31,32 @@ frappe.ui.form.on('Sales Order Item', {
                     if (response.message) {
                         row.item_tax_template = response.message;
                         frm.refresh_field('items'); 
-                        frm.save()
-                         // Assuming 'items' is the field name for the child table
-                        // frappe.msgprint(__('Tax Template processed successfully.'));
+                          // -----add in taxes---------------
+                          frm.doc.tax_category='Output Vat'
+                          const newEntry = {
+                              charge_type: "On Net Total",
+                              account_head: "VAT - 3L",
+                              description: "VAT",
+                              cost_center: "Main - 3L",
+                              account_currency: "BHD",
+                          };
+                          if (frm.doc.taxes){
+                          let exists = false;
+                          console.log("pppp",frm.doc.currency)
+                          frm.doc.taxes.forEach(function(row) {
+                              if (row.account_head === newEntry.account_head && row.charge_type === newEntry.charge_type) {
+                                  exists = true;
+                              }
+                          });
+                  
+                          // If the entry does not exist, add it
+                          if (!exists) {
+                              const childTable = frm.add_child('taxes', newEntry);
+                              frm.refresh_field('taxes');
+                          }}
+                          else{ const childTable = frm.add_child('taxes', newEntry);
+                              frm.refresh_field('taxes');}
+                         frm.save()
                     }
                 }
             });

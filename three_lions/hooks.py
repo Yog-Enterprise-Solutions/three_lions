@@ -12,7 +12,7 @@ app_license = "MIT"
 
 # include js, css files in header of desk.html
 # app_include_css = "/assets/three_lions/css/three_lions.css"
-# app_include_js = "/assets/three_lions/js/three_lions.js"
+app_include_js = "/public/js/tax_tempale_vat.js"
 
 # include js, css files in header of web template
 # web_include_css = "/assets/three_lions/css/three_lions.css"
@@ -31,7 +31,7 @@ app_license = "MIT"
 # include js in doctype views
 doctype_js = {"Quotation" : "public/js/quotation.js",
 			"Leave Application" : "public/js/leave_application.js",
-			"Opportunity" : "public/js/enquiry_from.js",
+			"Opportunity" : "public/js/enquiry_form.js",
 			"Sales Order" : "public/js/sales_order.js",
 			"Delivery Note" : "public/js/delivery_note.js",
 			"Sales Invoice" : "public/js/sales_invoice.js",
@@ -127,36 +127,46 @@ doctype_js = {"Quotation" : "public/js/quotation.js",
 
 doc_events = {
 	"Opportunity": {
-		"on_update": "three_lions.override.enquiry_form.set_customer_vat"
+		"on_update": "three_lions.override.enquiry_form.set_customer_vat",
+		"validate": "three_lions.override.enquiry_form.create_item"
+		
 	},
 	"Leave Application": {
 		"on_update": "three_lions.override.leave_application.loan_amount"
 	},
 	"Sales Order": {
 		"on_submit": "three_lions.override.sales_order.project_based_on_sales_order"
+	},
+	
+	"Branch": {
+		"on_update": "three_lions.override.branch.monthly_scheduler"
+	},
+    "Petty Cash": {
+		"validate": "three_lions.three_lions.doctype.petty_cash.petty_cash.calculate_opening"
 	}
 }
 
 # Scheduled Tasks
 # ---------------
 
-# scheduler_events = {
-#	"all": [
-#		"three_lions.tasks.all"
-#	],
-#	"daily": [
-#		"three_lions.tasks.daily"
-#	],
-#	"hourly": [
-#		"three_lions.tasks.hourly"
-#	],
-#	"weekly": [
-#		"three_lions.tasks.weekly"
-#	],
-#	"monthly": [
-#		"three_lions.tasks.monthly"
-#	],
-# }
+scheduler_events = {
+	"daily": [
+		"three_lions.override.currency_s.currency_exc",
+        "three_lions.override.branch.monthly_scheduler"
+	]
+	# "daily": [
+	# 	"three_lions.override.currency_s.currency_name"
+	# ],
+	# "hourly": [
+	# 	"three_lions.tasks.hourly"
+	# ],
+	# "weekly": [
+	# 	"three_lions.tasks.weekly"
+	# ],
+	# "monthly": [
+	# 	"three_lions.tasks.monthly"
+	# ],
+}
 
 # Testing
 # -------
@@ -167,7 +177,8 @@ doc_events = {
 # ------------------------------
 #
 # override_whitelisted_methods = {
-#	"frappe.desk.doctype.event.event.get_events": "three_lions.event.get_events"
+# #	"frappe.desk.doctype.event.event.get_events": "three_lions.event.get_events"
+#     'erpnext.setup.utils.get_exchange_rate' : 'three_lions.override.currency.convert_currency'
 # }
 #
 # each overriding function accepts a `data` argument;
@@ -226,3 +237,16 @@ doc_events = {
 # auth_hooks = [
 #	"three_lions.auth.validate"
 # ]
+
+
+fixtures = [
+     {
+        "dt": "Custom Field",
+        "filters": [
+            [
+                "module", "in", ["Three Lions"]
+            ]
+        ]
+    },
+     
+]
