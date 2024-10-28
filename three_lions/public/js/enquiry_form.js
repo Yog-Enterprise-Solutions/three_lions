@@ -4,7 +4,7 @@ frappe.ui.form.on('Opportunity', {
         frm.set_query('opportunity_from', () => {
             return {
                 filters: {
-                    'doctype': 'Customer'  // Ensure this is the correct filter if 'opportunity_from' links to Customer
+                    'name': 'Customer'  // Ensure this is the correct filter if 'opportunity_from' links to Customer
                 }
             };
         });
