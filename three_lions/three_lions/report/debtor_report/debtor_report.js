@@ -1,6 +1,3 @@
-// Copyright (c) 2024, yog and contributors
-// For license information, please see license.txt
-
 frappe.query_reports["Debtor Report"] = {
 	"filters": [
 		{
@@ -16,23 +13,35 @@ frappe.query_reports["Debtor Report"] = {
 			"fieldtype": "Date",
 			"default": frappe.datetime.month_end(),
 			"reqd": 1
+		},
+		{
+			"fieldname": "customer",
+			"label": __("Customer"),
+			"fieldtype": "Link",
+			"options": "Customer",
+			"on_change": function() {
+				// Get the selected customer
+				let customer = frappe.query_report.get_filter_value("customer");
+
+				// If customer is selected, fetch the full name
+				if (customer) {
+					frappe.db.get_value("Customer", customer, "customer_name", (value) => {
+						if (value) {
+							// Set the full name in the 'customer_full_name' field
+							frappe.query_report.set_filter_value("customer_full_name", value.customer_name);
+						}
+					});
+				} else {
+					// Clear the full name if no customer is selected
+					frappe.query_report.set_filter_value("customer_full_name", "");
+				}
+			}
+		},
+		{
+			"fieldname": "customer_full_name",
+			"label": __("Customer Full Name"),
+			"fieldtype": "Data",
+			"read_only": 1
 		}
-		// {
-		// 	fieldname: "cost_center",
-		// 	label: __("Cost Center"),
-		// 	fieldtype: "Link",
-		// 	options: "Cost Center"
-		// },
-		// {
-		// 	fieldname: "customer",
-		// 	label: __("Customer"),
-		// 	fieldtype: "Link",
-		// 	options: "Cost Center",
-		// 	fieldtype: "Link",
-		// 	options:'Customer'
-		// },
 	]
 };
-
-
-

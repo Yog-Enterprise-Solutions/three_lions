@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <style>
+
+.table > caption + thead > tr:first-child > th, .table > colgroup + thead > tr:first-child > th, .table > thead:first-child > tr:first-child > th, .table > caption + thead > tr:first-child > td, .table > colgroup + thead > tr:first-child > td, .table > thead:first-child > tr:first-child > td {
+    border-top: 0;
+    border: 1px solid;
+}
+
+        .print-format .table-bordered td, .print-format .table-bordered th {
+    border: 1px solid #030303;
+}
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+
+        .table, .table th, .table td {
+            border: 1px solid #000; /* Black table borders */
+        }
+
+        .table th {
+            padding: 8px;
+            text-align: left;
+            font-weight: bold;
+            color: #000; /* Black column header text */
+        }
+
+        .table td {
+            padding: 8px;
+            text-align: left;
+            color: #000; /* Black table text */
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+        .text-right {
+            text-align: right;
+        }
+
+        .text-muted {
+            color: #6c757d;
+        }
+
+        .indented-bold {
+        font-weight: bold;
+        padding: 4px;
+    }
+    
+    </style>
+</head>
+
+<body>
+
+    <hr>
+    <div class="customer_details">
+        <p>To,</p>
+        <p class="indented-bold">
+            {% if filters.customer_full_name %}
+                {{ filters.customer_full_name }}
+            {% endif %}
+        </p>
+        <p>
+            {% if data %}
+            {% for entry in data %}
+                {% if entry.address %}
+                    {{ entry.address }}
+                {% endif %}
+            {% endfor %}
+        {% endif %}
+           
+            
+        </p>
+        
+        
+       
+    </div>
+    
+
+    {% let currencies = {}; %}
+
+    <!-- Group data by currency, skip rows where currency is None or empty -->
+    {% for (let i = 0; i < data.length; i++) { %}
+        {% let currency = data[i].transaction_currency; %}
+        {% if (currency && currency.trim() !== '') { %}
+            {% if (!currencies[currency]) { currencies[currency] = []; } %}
+            {% currencies[currency].push(data[i]); %}
+        {% } %}
+    {% } %}
+
+    <!-- Loop through each currency and create a table -->
+    {% for (let currency in currencies) { %}
+    <h3 class="text-center">{%= currency %}</h3> 
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th style="width: 12%">{%= __("INV.DATE") %}</th>
+                    <th style="width: 12%">{%= __("Due.DATE") %}</th>
+                    <th style="width: 10%">{%= __("INV.AGE") %}</th>
+                    <th style="width: 15%">{%= __("INV.NO") %}</th>
+                    <th style="width: 12%">{%= __("REF.NO") %}</th>
+                    <th style="width: 20%">{%= __("Description") %}</th>
+                    <th style="width: 10%">{%= __("DEBIT") %}</th>
+                    <th style="width: 10%">{%= __("CREDIT") %}</th>
+                    <th style="width: 10%">{%= __("BALANCE") %}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% let totalBalance = 0; %}
+
+                {% for (let i = 0; i < currencies[currency].length; i++) { %}
+                    <tr>
+                        <td>{%= currencies[currency][i].posting_date || '' %}</td>
+                        <td>{%= currencies[currency][i].due_date || '' %}</td>
+                        <td>{%= currencies[currency][i].inv_age || 0 %}</td>
+                        <td>{%= currencies[currency][i].voucher_no || '' %}</td>
+                        <td>{%= currencies[currency][i].name || '' %}</td>
+                        <td>{%= currencies[currency][i].remarks || '' %}</td>
+                        <td>{%= currencies[currency][i].debit_in_transaction_currency || 0 %}</td>
+                        <td>{%= currencies[currency][i].credit_in_transaction_currency || 0 %}</td>
+                        <td>{%= currencies[currency][i].balance || 0 %}</td>
+                    </tr>
+
+                    {% totalBalance += currencies[currency][i].balance || 0; %}
+                {% } %}
+
+                <!-- Total balance row -->
+                <tr>
+                    <td colspan="8" class="text-right"><strong>Total Balance:</strong></td>
+                    <td>{%= totalBalance %}</td>
+                </tr>
+            </tbody>
+        </table>
+    {% } %}
+
+    <p class="text-right text-muted">Printed On {%= frappe.datetime.str_to_user(frappe.datetime.get_datetime_as_string()) %}</p>
+</body>
+
+</html>

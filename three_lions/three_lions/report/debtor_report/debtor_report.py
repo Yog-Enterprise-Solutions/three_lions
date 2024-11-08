@@ -18,6 +18,16 @@ def get_data(filters):
 	data_based_on_currency = {}
 	# Initialize the final list to store formatted data
 	formatted_data = []
+	receivable_acc=None
+	if frappe.db.exists('Party Account',{'parenttype':'Customer','parent':filters.get("customer")},'account'):
+		customer_account=frappe.db.get_value('Party Account',{'parenttype':'Customer','parent':filters.get("customer")},'account')
+		receivable_acc=customer_account
+	else:
+		default_company=frappe.defaults.get_user_default("Company")
+		company_doc=frappe.get_doc('Company',default_company)
+		default_rece_account=company_doc.default_receivable_account
+		receivable_acc=default_rece_account
+	filters['receivable_acc'] = receivable_acc
 	
 	# Base query with placeholders for dynamic filtering
 	query = """
@@ -30,7 +40,7 @@ def get_data(filters):
 		FROM 
 			`tabGL Entry`
 		WHERE 
-			is_cancelled = 0 AND voucher_type = 'Sales Invoice' AND account = 'Debtors - 3L'
+			is_cancelled = 0
 			{filters}  -- Dynamic filters will be added here
 		ORDER BY 
 			posting_date
@@ -38,15 +48,17 @@ def get_data(filters):
 
 	# Build dynamic filters
 	where_conditions = []
-
 	if filters.get("from_date"):
 		where_conditions.append("posting_date >= %(from_date)s")
 	if filters.get("to_date"):
 		where_conditions.append("posting_date <= %(to_date)s")
-	if filters.get("cost_center"):
-		where_conditions.append("cost_center = %(cost_center)s")
 	if filters.get("customer"):
-		where_conditions.append("customer = %(customer)s")
+		where_conditions.append("party = %(customer)s")
+		# address=get_customer_address(filters)
+		# data['address']=address
+    
+	if filters.get("receivable_acc"):
+		where_conditions.append("account = %(receivable_acc)s")
 
 	# Add conditions to query
 	filters_query = " AND " + " AND ".join(where_conditions) if where_conditions else ""
@@ -57,6 +69,9 @@ def get_data(filters):
 
 	# Organize data by currency
 	for gl in data:
+		if filters.get("customer"):
+			address=get_customer_address(filters)
+			gl['address']=address
 		currency = gl['transaction_currency']
 		if currency not in data_based_on_currency:
 			data_based_on_currency[currency] = []
@@ -105,14 +120,8 @@ def get_data(filters):
 		'inv_age': None
 	}
 
-		# Append the None row and header row for the current currency
-		formatted_data.append(header_row)
 
-		# Append all entries for the current currency
 		formatted_data.extend(entries)
-		formatted_data.append(total_balance_row)
-		formatted_data.append(header_row_None)
-	# frappe.throw(f"{formatted_data}")
 	return formatted_data
 
 
@@ -187,3 +196,37 @@ def get_columns(filters):
 	]
 
 	return columns
+
+
+
+def get_customer_address(filters):
+    """Fetch and concatenate all addresses linked to a customer."""
+    full_address = ""
+
+    if filters.get("customer"):
+        # Fetch linked address(es) using the Dynamic Link table
+        linked_addresses = frappe.db.sql("""
+            SELECT parent
+            FROM `tabDynamic Link`
+            WHERE link_doctype = 'Customer'
+              AND link_name = %s
+              AND parenttype = 'Address'
+        """, (filters.get("customer")), as_list=True)
+
+        # Check if any linked addresses are found
+        if linked_addresses:
+            for address in linked_addresses:
+                # Get the address document using the linked address ID
+                address_doc = frappe.get_doc('Address', address[0])
+                # Concatenate address fields into one string
+                address_parts = [
+                    address_doc.address_line1,
+                    address_doc.address_line2,
+                    address_doc.city,
+                    address_doc.state,
+                    address_doc.country
+                ]
+                # Filter out any empty address fields
+                full_address += ", ".join(filter(None, address_parts)) + "\n"
+    
+    return full_address.strip()  # Strip any extra newlines at the end
