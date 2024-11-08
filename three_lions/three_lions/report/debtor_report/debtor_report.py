@@ -12,25 +12,13 @@ def execute(filters=None):
 
 
 
+
 def get_data(filters):
 	# Initialize dictionary to store data based on currency
 	data_based_on_currency = {}
 	# Initialize the final list to store formatted data
 	formatted_data = []
-	# Header dictionary to insert before each currency's data
-	header_row = {
-		'transaction_currency': 'Currency',
-		'posting_date': 'INV.DATE',
-		'due_date': 'Due.DATE',
-		'voucher_no': 'INV.NO',
-		'name': 'REF.NO',
-		'remarks': 'No Remarks',
-		'debit_in_transaction_currency': 'DEBIT',
-		'credit_in_transaction_currency': 'Credit',
-		'balance': 'BALANCE',
-		'inv_age': 'INV.AGE'
-	}
-
+	
 	# Base query with placeholders for dynamic filtering
 	query = """
 		SELECT 
@@ -76,11 +64,54 @@ def get_data(filters):
 
 	# Iterate over each currency in data_based_on_currency
 	for currency, entries in data_based_on_currency.items():
-		# Append the header row for the current currency
+		 # Calculate the total balance for the current currency
+		total_balance = sum(entry['balance'] for entry in entries)
+		
+		# Dynamically create the header row for the current currency
+		header_row = {
+			'transaction_currency': f'Currency({currency})',
+			'posting_date': 'INV.DATE',
+			'due_date': 'Due.DATE',
+			'voucher_no': 'INV.NO',
+			'name': 'REF.NO',
+			'remarks': 'No Remarks',
+			'debit_in_transaction_currency': f'DEBIT({currency})',
+			'credit_in_transaction_currency': f'Credit ({currency})',
+			'balance': f'BALANCE ({currency})',
+			'inv_age': 'INV.AGE'
+		}
+		total_balance_row = {
+		'transaction_currency':None,
+		'posting_date': None,
+		'due_date': None,
+		'voucher_no':None,
+		'name': None,
+		'remarks': None,
+		'debit_in_transaction_currency': None,
+		'credit_in_transaction_currency':'Total Balance',
+		'balance':total_balance,
+		'inv_age': None
+	}
+		header_row_None = {
+		'transaction_currency':None,
+		'posting_date': None,
+		'due_date': None,
+		'voucher_no':None,
+		'name': None,
+		'remarks': None,
+		'debit_in_transaction_currency': None,
+		'credit_in_transaction_currency':None,
+		'balance':None,
+		'inv_age': None
+	}
+
+		# Append the None row and header row for the current currency
 		formatted_data.append(header_row)
 
 		# Append all entries for the current currency
 		formatted_data.extend(entries)
+		formatted_data.append(total_balance_row)
+		formatted_data.append(header_row_None)
 	# frappe.throw(f"{formatted_data}")
 	return formatted_data
 
@@ -95,7 +126,7 @@ def get_columns(filters):
 			"label":  ("Currency"),
 			"fieldname": "transaction_currency",
 			"fieldtype": "Data",
-			"width": 100,
+			"width": 150,
 		},
 		{
 			"label":  ("INV.DATE"),
@@ -136,19 +167,19 @@ def get_columns(filters):
 			"width": 200,
 		},
 		{
-			"label":  ("DEBIT (BHD)"),
+			"label":  ("DEBIT"),
 			"fieldname": "debit_in_transaction_currency",
 			"fieldtype": "Data",
 			"width": 120,
 		},
 		{
-			"label":  ("CREDIT (BHD)"),
-			"fieldname": "credit_bhd",
+			"label":  ("CREDIT"),
+			"fieldname": "credit_in_transaction_currency",
 			"fieldtype": "Data",
 			"width": 120,
 		},
 		{
-			"label":  ("BALANCE (BHD)"),
+			"label":  ("BALANCE"),
 			"fieldname": "balance",
 			"fieldtype": "Data",
 			"width": 120,
