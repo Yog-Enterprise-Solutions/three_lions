@@ -56,7 +56,7 @@ def get_data(filters):
 		where_conditions.append("party = %(customer)s")
 		# address=get_customer_address(filters)
 		# data['address']=address
-    
+	
 	if filters.get("receivable_acc"):
 		where_conditions.append("account = %(receivable_acc)s")
 
@@ -72,6 +72,8 @@ def get_data(filters):
 		if filters.get("customer"):
 			address=get_customer_address(filters)
 			gl['address']=address
+			contact=get_customer_contact(filters)
+			gl['contact']=contact
 		currency = gl['transaction_currency']
 		if currency not in data_based_on_currency:
 			data_based_on_currency[currency] = []
@@ -200,33 +202,51 @@ def get_columns(filters):
 
 
 def get_customer_address(filters):
-    """Fetch and concatenate all addresses linked to a customer."""
-    full_address = ""
+	"""Fetch and concatenate all addresses linked to a customer."""
+	full_address = ""
+
+	if filters.get("customer"):
+		# Fetch linked address(es) using the Dynamic Link table
+		linked_addresses = frappe.db.sql("""
+			SELECT parent
+			FROM `tabDynamic Link`
+			WHERE link_doctype = 'Customer'
+			  AND link_name = %s
+			  AND parenttype = 'Address'
+		""", (filters.get("customer")), as_list=True)
+
+		# Check if any linked addresses are found
+		if linked_addresses:
+			for address in linked_addresses:
+				# Get the address document using the linked address ID
+				address_doc = frappe.get_doc('Address', address[0])
+				# Concatenate address fields into one string
+				address_parts = [
+					address_doc.address_line1,
+					address_doc.address_line2,
+					address_doc.city,
+					address_doc.state,
+					address_doc.country
+				]
+				# Filter out any empty address fields
+				full_address += ", ".join(filter(None, address_parts)) + "\n"
+	
+	return full_address.strip()  # Strip any extra newlines at the end
+
+
+def get_customer_contact(filters):
+    linked_contact = None
 
     if filters.get("customer"):
-        # Fetch linked address(es) using the Dynamic Link table
-        linked_addresses = frappe.db.sql("""
-            SELECT parent
-            FROM `tabDynamic Link`
-            WHERE link_doctype = 'Customer'
-              AND link_name = %s
-              AND parenttype = 'Address'
-        """, (filters.get("customer")), as_list=True)
+        primary_contact = frappe.db.get_value('Customer', filters.get("customer"), 'customer_primary_contact')
 
-        # Check if any linked addresses are found
-        if linked_addresses:
-            for address in linked_addresses:
-                # Get the address document using the linked address ID
-                address_doc = frappe.get_doc('Address', address[0])
-                # Concatenate address fields into one string
-                address_parts = [
-                    address_doc.address_line1,
-                    address_doc.address_line2,
-                    address_doc.city,
-                    address_doc.state,
-                    address_doc.country
-                ]
-                # Filter out any empty address fields
-                full_address += ", ".join(filter(None, address_parts)) + "\n"
-    
-    return full_address.strip()  # Strip any extra newlines at the end
+        # Fetch linked contact phone(s) using the Dynamic Link table
+        linked_contact = frappe.db.sql("""
+            SELECT phone
+            FROM `tabContact Phone`
+            WHERE parent = %s
+              AND parenttype = 'Contact'
+        """, (primary_contact,), as_list=True)
+
+    return linked_contact
+

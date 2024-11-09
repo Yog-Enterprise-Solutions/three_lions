@@ -58,29 +58,49 @@
 <body>
 
     <hr>
-    <div class="customer_details">
-        <p>To,</p>
-        <p class="indented-bold">
-            {% if filters.customer_full_name %}
-                {{ filters.customer_full_name }}
-            {% endif %}
-        </p>
-        <p>
-            {% if data %}
+<div class="customer_details" style="float: left; width: 50%;">
+    <p>To,</p>
+    <p class="indented-bold">
+        {% if filters.customer_full_name %}
+            {{ filters.customer_full_name }}
+        {% endif %}
+    </p>
+    <p>
+        {% if data %}
             {% for entry in data %}
                 {% if entry.address %}
                     {{ entry.address }}
+                    {% break %}
                 {% endif %}
             {% endfor %}
         {% endif %}
-           
-            
-        </p>
-        
-        
-       
-    </div>
-    
+    </p>
+    <p>
+        {% if data %}
+            {% for entry in data %}
+                {% if entry.contact %}
+                   Tel : {{ entry.contact }}
+                    {% break %}
+                {% endif %}
+            {% endfor %}
+        {% endif %}
+    </p>
+</div>
+
+<div class="date_details" style="float: right; width: 50%; text-align: right;">
+    <p>
+        {% if filters.from_date %}
+            From: {{ filters.from_date }}
+        {% endif %}
+    </p>
+    <p>
+        {% if filters.to_date %}
+            To: {{ filters.to_date }}
+        {% endif %}
+    </p>
+</div>
+<div style="clear: both;"></div>
+
 
     {% let currencies = {}; %}
 
@@ -99,15 +119,15 @@
         <table class="table table-bordered">
             <thead>
                 <tr>
-                    <th style="width: 12%">{%= __("INV.DATE") %}</th>
-                    <th style="width: 12%">{%= __("Due.DATE") %}</th>
-                    <th style="width: 10%">{%= __("INV.AGE") %}</th>
-                    <th style="width: 15%">{%= __("INV.NO") %}</th>
-                    <th style="width: 12%">{%= __("REF.NO") %}</th>
-                    <th style="width: 20%">{%= __("Description") %}</th>
-                    <th style="width: 10%">{%= __("DEBIT") %}</th>
-                    <th style="width: 10%">{%= __("CREDIT") %}</th>
-                    <th style="width: 10%">{%= __("BALANCE") %}</th>
+                    <th >{%= __("INV.DATE") %}</th>
+                    <th >{%= __("Due.DATE") %}</th>
+                    <th >{%= __("INV.AGE") %}</th>
+                    <th >{%= __("INV.NO") %}</th>
+                    <th >{%= __("REF.NO") %}</th>
+                    <!-- <th style="width: 30%">{%= __("Description") %}</th> -->
+                    <th >{%= __("DEBIT") %}</th>
+                    <th >{%= __("CREDIT") %}</th>
+                    <th >{%= __("BALANCE") %}</th>
                 </tr>
             </thead>
             <tbody>
@@ -120,7 +140,7 @@
                         <td>{%= currencies[currency][i].inv_age || 0 %}</td>
                         <td>{%= currencies[currency][i].voucher_no || '' %}</td>
                         <td>{%= currencies[currency][i].name || '' %}</td>
-                        <td>{%= currencies[currency][i].remarks || '' %}</td>
+                        <!-- <td>{%= currencies[currency][i].remarks || '' %}</td> -->
                         <td>{%= currencies[currency][i].debit_in_transaction_currency || 0 %}</td>
                         <td>{%= currencies[currency][i].credit_in_transaction_currency || 0 %}</td>
                         <td>{%= currencies[currency][i].balance || 0 %}</td>
@@ -131,7 +151,7 @@
 
                 <!-- Total balance row -->
                 <tr>
-                    <td colspan="8" class="text-right"><strong>Total Balance:</strong></td>
+                    <td colspan="7" class="text-right"><strong>Total Balance:</strong></td>
                     <td>{%= totalBalance %}</td>
                 </tr>
             </tbody>
