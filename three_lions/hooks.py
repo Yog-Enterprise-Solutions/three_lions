@@ -248,5 +248,13 @@ fixtures = [
             ]
         ]
     },
+     {
+        "dt": "Workspace",
+        "filters": [
+            [
+                "module", "in", ["Three Lions"]
+            ]
+        ]
+    }
      
 ]
