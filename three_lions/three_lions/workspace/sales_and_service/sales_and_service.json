@@ -12,7 +12,7 @@
  "is_hidden": 0,
  "label": "Sales and Service",
  "links": [],
- "modified": "2024-11-09 10:24:41.766681",
+ "modified": "2025-01-21 11:36:48.333602",
  "modified_by": "Administrator",
  "module": "Three Lions",
  "name": "Sales and Service",
@@ -27,6 +27,9 @@
   },
   {
    "role": "Service"
+  },
+  {
+   "role": "All"
   }
  ],
  "sequence_id": 1.0,

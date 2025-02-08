@@ -32,11 +32,17 @@ def create_item(doc, method=None):
         existing_item = frappe.db.exists('Item', {'item_name': description_text})
 
         if not existing_item:
-            # Create a new item document
+            # last_item = frappe.db.get_list('Item',
+            #     order_by='creation desc',
+            #     page_length=1
+            # )
+            # last_item_code = f"""{item_data.custom_item_type_code}{int(last_item[0].get('name')[-4:]) + 1}"""
             item = frappe.get_doc({
                 "doctype": "Item",
+                # "item_code":last_item_code,
                 "item_name": description_text,
-                "item_group": 'All Item Groups',
+                "item_group": item_data.get('item_group'),
+                "custom_item_type_code": item_data.get('custom_item_type_code'),
                 "stock_uom": item_data.get('uom'),
                 "description": description_new,
                 'is_stock_item': stock,

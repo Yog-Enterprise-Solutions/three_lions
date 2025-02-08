@@ -1,5 +1,4 @@
 import frappe
-import frappe
 from frappe import _
 from frappe.model.mapper import get_mapped_doc
 from frappe.utils import flt, getdate, nowdate
@@ -13,9 +12,11 @@ def make_purchase_order(source_name, target_doc=None):
 		target.run_method("set_missing_values")
 		target.run_method("get_schedule_dates")
 		target.run_method("calculate_taxes_and_totals")
+		target.custom_customer_ref_no = ""
 
 	def update_item(obj, target, source_parent):
 		target.stock_qty = flt(obj.qty) * flt(obj.conversion_factor)
+
 
 	doclist = get_mapped_doc(
 		"Opportunity",

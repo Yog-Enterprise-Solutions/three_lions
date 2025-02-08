@@ -9,24 +9,20 @@ def execute(filters=None):
 	columns, data =get_columns(filters),get_data(filters)
 	return columns, data
 
-
-
-
-
 def get_data(filters):
 	# Initialize dictionary to store data based on currency
 	data_based_on_currency = {}
 	# Initialize the final list to store formatted data
 	formatted_data = []
-	receivable_acc=None
-	if frappe.db.exists('Party Account',{'parenttype':'Customer','parent':filters.get("customer")},'account'):
-		customer_account=frappe.db.get_value('Party Account',{'parenttype':'Customer','parent':filters.get("customer")},'account')
-		receivable_acc=customer_account
+	receivable_acc = None
+	if frappe.db.exists('Party Account', {'parenttype': 'Customer', 'parent': filters.get("customer")}, 'account'):
+		customer_account = frappe.db.get_value('Party Account', {'parenttype': 'Customer', 'parent': filters.get("customer")}, 'account')
+		receivable_acc = customer_account
 	else:
-		default_company=frappe.defaults.get_user_default("Company")
-		company_doc=frappe.get_doc('Company',default_company)
-		default_rece_account=company_doc.default_receivable_account
-		receivable_acc=default_rece_account
+		default_company = frappe.defaults.get_user_default("Company")
+		company_doc = frappe.get_doc('Company', default_company)
+		default_rece_account = company_doc.default_receivable_account
+		receivable_acc = default_rece_account
 	filters['receivable_acc'] = receivable_acc
 	
 	# Base query with placeholders for dynamic filtering
@@ -54,8 +50,6 @@ def get_data(filters):
 		where_conditions.append("posting_date <= %(to_date)s")
 	if filters.get("customer"):
 		where_conditions.append("party = %(customer)s")
-		# address=get_customer_address(filters)
-		# data['address']=address
 	
 	if filters.get("receivable_acc"):
 		where_conditions.append("account = %(receivable_acc)s")
@@ -70,10 +64,20 @@ def get_data(filters):
 	# Organize data by currency
 	for gl in data:
 		if filters.get("customer"):
-			address=get_customer_address(filters)
-			gl['address']=address
-			contact=get_customer_contact(filters)
-			gl['contact']=contact
+			address = get_customer_address(filters)
+			gl['address'] = address
+			contact = get_customer_contact(filters)
+			gl['contact'] = contact
+		gl['sales_doc'] = frappe.db.get_value("Sales Invoice", {"name": gl["voucher_no"]}, "po_no")
+		gl['remarks_s'] = frappe.db.get_value("Sales Invoice", {"name": gl["voucher_no"]}, "remarks")
+		# Format posting_date and due_date
+		gl['posting_date'] = datetime.strftime(gl['posting_date'], "%d-%m-%Y") if gl['posting_date'] else None
+		gl['due_date'] = datetime.strftime(gl['due_date'], "%d-%m-%Y") if gl['due_date'] else None
+		
+		gl['debit_in_transaction_currency'] = "{:,.3f}".format(gl['debit_in_transaction_currency']) if gl['debit_in_transaction_currency'] else "0.000"
+		gl['credit_in_transaction_currency'] = "{:,.3f}".format(gl['credit_in_transaction_currency']) if gl['credit_in_transaction_currency'] else "0.000"
+		gl['balance'] = "{:,.3f}".format(gl['balance']) if gl['balance'] else "0.000"
+  
 		currency = gl['transaction_currency']
 		if currency not in data_based_on_currency:
 			data_based_on_currency[currency] = []
@@ -81,8 +85,10 @@ def get_data(filters):
 
 	# Iterate over each currency in data_based_on_currency
 	for currency, entries in data_based_on_currency.items():
-		 # Calculate the total balance for the current currency
-		total_balance = sum(entry['balance'] for entry in entries)
+		# Calculate the total debit, credit, and balance for the current currency
+		total_debit = sum(float(entry['debit_in_transaction_currency'].replace(',', '')) for entry in entries)
+		total_credit = sum(float(entry['credit_in_transaction_currency'].replace(',', '')) for entry in entries)
+		total_balance = sum(float(entry['balance'].replace(',', '')) for entry in entries)  # Remove commas before sum
 		
 		# Dynamically create the header row for the current currency
 		header_row = {
@@ -90,40 +96,28 @@ def get_data(filters):
 			'posting_date': 'INV.DATE',
 			'due_date': 'Due.DATE',
 			'voucher_no': 'INV.NO',
-			'name': 'REF.NO',
-			'remarks': 'No Remarks',
+			'sales_doc': 'REF.NO',
+			'remarks_s': 'No Remarks',
 			'debit_in_transaction_currency': f'DEBIT({currency})',
 			'credit_in_transaction_currency': f'Credit ({currency})',
 			'balance': f'BALANCE ({currency})',
 			'inv_age': 'INV.AGE'
 		}
-		total_balance_row = {
-		'transaction_currency':None,
-		'posting_date': None,
-		'due_date': None,
-		'voucher_no':None,
-		'name': None,
-		'remarks': None,
-		'debit_in_transaction_currency': None,
-		'credit_in_transaction_currency':'Total Balance',
-		'balance':total_balance,
-		'inv_age': None
-	}
-		header_row_None = {
-		'transaction_currency':None,
-		'posting_date': None,
-		'due_date': None,
-		'voucher_no':None,
-		'name': None,
-		'remarks': None,
-		'debit_in_transaction_currency': None,
-		'credit_in_transaction_currency':None,
-		'balance':None,
-		'inv_age': None
-	}
-
+		total_row = {
+			'transaction_currency': None,
+			'posting_date': None,
+			'due_date': None,
+			'voucher_no': None,
+			'sales_doc': None,
+			'remarks_s': 'Total',
+			'debit_in_transaction_currency': "{:,.3f}".format(total_debit),
+			'credit_in_transaction_currency': "{:,.3f}".format(total_credit),
+			'balance': "{:,.3f}".format(total_balance),
+			'inv_age': None
+		}
 
 		formatted_data.extend(entries)
+		formatted_data.append(total_row)
 	return formatted_data
 
 
@@ -166,14 +160,14 @@ def get_columns(filters):
 		},
 		{
 			"label":  ("REF.NO"),
-			"fieldname": "name",
+			"fieldname": "sales_doc",
 			"fieldtype": "Data",
 			# "options":'GL Entry',
 			"width": 150,
 		},
 		{
 			"label":  ("Description"),
-			"fieldname": "remarks",
+			"fieldname": "remarks_s",
 			"fieldtype": "Data",
 			"width": 200,
 		},
@@ -235,18 +229,18 @@ def get_customer_address(filters):
 
 
 def get_customer_contact(filters):
-    linked_contact = None
+	linked_contact = None
 
-    if filters.get("customer"):
-        primary_contact = frappe.db.get_value('Customer', filters.get("customer"), 'customer_primary_contact')
+	if filters.get("customer"):
+		primary_contact = frappe.db.get_value('Customer', filters.get("customer"), 'customer_primary_contact')
 
-        # Fetch linked contact phone(s) using the Dynamic Link table
-        linked_contact = frappe.db.sql("""
-            SELECT phone
-            FROM `tabContact Phone`
-            WHERE parent = %s
-              AND parenttype = 'Contact'
-        """, (primary_contact,), as_list=True)
+		# Fetch linked contact phone(s) using the Dynamic Link table
+		linked_contact = frappe.db.sql("""
+			SELECT phone
+			FROM `tabContact Phone`
+			WHERE parent = %s
+			  AND parenttype = 'Contact'
+		""", (primary_contact,), as_list=True)
 
-    return linked_contact
+	return linked_contact
 
