@@ -30,7 +30,7 @@ app_include_js = "/public/js/tax_tempale_vat.js"
 
 # include js in doctype views
 doctype_js = {"Quotation" : "public/js/quotation.js",
-			"Leave Application" : "public/js/leave_application.js",
+			# "Leave Application" : "public/js/leave_application.js",
 			"Opportunity" : "public/js/enquiry_form.js",
 			"Sales Order" : "public/js/sales_order.js",
 			"Delivery Note" : "public/js/delivery_note.js",
@@ -131,16 +131,16 @@ doc_events = {
 		"validate": "three_lions.override.enquiry_form.create_item"
 		
 	},
-	"Leave Application": {
-		"on_update": "three_lions.override.leave_application.loan_amount"
-	},
+	# "Leave Application": {
+	# 	"on_update": "three_lions.override.leave_application.loan_amount"
+	# },
 	"Sales Order": {
 		"on_submit": "three_lions.override.sales_order.project_based_on_sales_order"
 	},
 	
-	"Branch": {
-		"on_update": "three_lions.override.branch.monthly_scheduler"
-	},
+	# "Branch": {
+	# 	"on_update": "three_lions.override.branch.monthly_scheduler"
+	# },
     "Petty Cash": {
 		"validate": "three_lions.three_lions.doctype.petty_cash.petty_cash.calculate_opening"
 	}
@@ -152,7 +152,7 @@ doc_events = {
 scheduler_events = {
 	"daily": [
 		"three_lions.override.currency_s.currency_exc",
-        "three_lions.override.branch.monthly_scheduler"
+        # "three_lions.override.branch.monthly_scheduler"
 	]
 	# "daily": [
 	# 	"three_lions.override.currency_s.currency_name"

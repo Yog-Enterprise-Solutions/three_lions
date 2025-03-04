@@ -29,9 +29,9 @@ def get_data(filters):
 	query = """
 		SELECT 
 			transaction_currency,
-			posting_date, due_date, voucher_no, name, remarks,
+			posting_date, due_date, voucher_no, name, remarks,against_voucher_type,against_voucher,voucher_type,
 			debit_in_transaction_currency, credit_in_transaction_currency,
-			(debit_in_transaction_currency - credit_in_transaction_currency) AS balance,
+
 			DATEDIFF(CURDATE(), posting_date) AS inv_age
 		FROM 
 			`tabGL Entry`
@@ -61,27 +61,45 @@ def get_data(filters):
 	# Execute query
 	data = frappe.db.sql(query, filters, as_dict=True)
 
-	# Organize data by currency
-	for gl in data:
+	other_voucher = [row for row in data if row["voucher_type"] != "Sales Invoice"]
+	sales_invoices = [row for row in data if row["voucher_type"] == "Sales Invoice"]
+	for gl in sales_invoices:
 		if filters.get("customer"):
 			address = get_customer_address(filters)
 			gl['address'] = address
 			contact = get_customer_contact(filters)
 			gl['contact'] = contact
-		gl['sales_doc'] = frappe.db.get_value("Sales Invoice", {"name": gl["voucher_no"]}, "po_no")
-		gl['remarks_s'] = frappe.db.get_value("Sales Invoice", {"name": gl["voucher_no"]}, "remarks")
+
+		gl['remarks_s'] = gl["remarks"]
 		# Format posting_date and due_date
 		gl['posting_date'] = datetime.strftime(gl['posting_date'], "%d-%m-%Y") if gl['posting_date'] else None
 		gl['due_date'] = datetime.strftime(gl['due_date'], "%d-%m-%Y") if gl['due_date'] else None
+
+		if gl["voucher_type"] == "Sales Invoice":
+			for payment in other_voucher:
+				if payment["against_voucher"] == gl["voucher_no"]:
+					gl['credit_in_transaction_currency'] = float(gl['credit_in_transaction_currency']) + float(payment['credit_in_transaction_currency'])
+					remove_index = other_voucher.index(payment)
+					other_voucher.pop(remove_index)
+
+			sales_invoice_doc = frappe.db.get_value("Sales Invoice", {"name": gl["voucher_no"]},["po_no","remarks"], as_dict=1)
+			gl['remarks_s'] = sales_invoice_doc["remarks"]
+			gl['sales_doc'] = sales_invoice_doc["po_no"]
+			
+		else:
+			gl['sales_doc'] = gl["against_voucher"]
+
+		# Calculate balance
+		gl['balance'] = "{:,.3f}".format(gl['debit_in_transaction_currency'] - gl['credit_in_transaction_currency'])
 		
 		gl['debit_in_transaction_currency'] = "{:,.3f}".format(gl['debit_in_transaction_currency']) if gl['debit_in_transaction_currency'] else "0.000"
 		gl['credit_in_transaction_currency'] = "{:,.3f}".format(gl['credit_in_transaction_currency']) if gl['credit_in_transaction_currency'] else "0.000"
-		gl['balance'] = "{:,.3f}".format(gl['balance']) if gl['balance'] else "0.000"
-  
+		
 		currency = gl['transaction_currency']
 		if currency not in data_based_on_currency:
 			data_based_on_currency[currency] = []
-		data_based_on_currency[currency].append(gl)
+		if gl['balance'] != "0.000":
+			data_based_on_currency[currency].append(gl)
 
 	# Iterate over each currency in data_based_on_currency
 	for currency, entries in data_based_on_currency.items():
@@ -97,7 +115,7 @@ def get_data(filters):
 			'due_date': 'Due.DATE',
 			'voucher_no': 'INV.NO',
 			'sales_doc': 'REF.NO',
-			'remarks_s': 'No Remarks',
+			'remarks_s': 'No Remarks 1',
 			'debit_in_transaction_currency': f'DEBIT({currency})',
 			'credit_in_transaction_currency': f'Credit ({currency})',
 			'balance': f'BALANCE ({currency})',
@@ -119,11 +137,6 @@ def get_data(filters):
 		formatted_data.extend(entries)
 		formatted_data.append(total_row)
 	return formatted_data
-
-
-
-
-
 	
 def get_columns(filters):
 	columns = [
@@ -131,25 +144,25 @@ def get_columns(filters):
 			"label":  ("Currency"),
 			"fieldname": "transaction_currency",
 			"fieldtype": "Data",
-			"width": 150,
+			"width": 80,
 		},
 		{
 			"label":  ("INV.DATE"),
 			"fieldname": "posting_date",
 			"fieldtype": "Data",
-			"width": 100,
+			"width": 110,
 		},
 		{
 			"label":  ("Due.DATE"),
 			"fieldname": "due_date",
 			"fieldtype": "Data",
-			"width": 100,
+			"width": 110,
 		},
 		{
 			"label":  ("INV.AGE"),
 			"fieldname": "inv_age",
 			"fieldtype": "Data",
-			"width": 100,
+			"width": 80,
 		},
 		{
 			"label":  ("INV.NO"),
@@ -169,7 +182,7 @@ def get_columns(filters):
 			"label":  ("Description"),
 			"fieldname": "remarks_s",
 			"fieldtype": "Data",
-			"width": 200,
+			"width": 180,
 		},
 		{
 			"label":  ("DEBIT"),
