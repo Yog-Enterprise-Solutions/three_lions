@@ -89,16 +89,29 @@ def get_data(filters):
 		else:
 			gl['sales_doc'] = gl["against_voucher"]
 
-		# Calculate balance
-		gl['balance'] = "{:,.3f}".format(gl['debit_in_transaction_currency'] - gl['credit_in_transaction_currency'])
+		# Calculate cumulative balance
+		if "cumulative_balance" not in locals():
+			cumulative_balance = {}
+		currency = gl["transaction_currency"]
 		
-		gl['debit_in_transaction_currency'] = "{:,.3f}".format(gl['debit_in_transaction_currency']) if gl['debit_in_transaction_currency'] else "0.000"
-		gl['credit_in_transaction_currency'] = "{:,.3f}".format(gl['credit_in_transaction_currency']) if gl['credit_in_transaction_currency'] else "0.000"
+		# Ensure numeric conversion
+		debit = float(gl["debit_in_transaction_currency"]) if gl["debit_in_transaction_currency"] else 0.0
+		credit = float(gl["credit_in_transaction_currency"]) if gl["credit_in_transaction_currency"] else 0.0
+		current_row_balance = debit - credit
+
+		# Initialize cumulative balance for the currency if not already done
+		if currency not in cumulative_balance:
+			cumulative_balance[currency] = 0.0
+		cumulative_balance[currency] += current_row_balance
+		gl["balance"] = "{:,.3f}".format(cumulative_balance[currency])
 		
-		currency = gl['transaction_currency']
+		# Format debit and credit fields
+		gl["debit_in_transaction_currency"] = "{:,.3f}".format(debit)
+		gl["credit_in_transaction_currency"] = "{:,.3f}".format(credit)
+		
 		if currency not in data_based_on_currency:
 			data_based_on_currency[currency] = []
-		if gl['balance'] != "0.000":
+		if current_row_balance != 0:
 			data_based_on_currency[currency].append(gl)
 
 	# Iterate over each currency in data_based_on_currency
