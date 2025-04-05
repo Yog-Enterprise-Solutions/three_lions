@@ -1,7 +1,7 @@
 {
  "charts": [],
  "content": "[{\"id\":\"3JIRUZaWkl\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\">Sales/Service</span>\",\"col\":12}},{\"id\":\"INwvaqHcML\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Enquiry Form\",\"col\":3}},{\"id\":\"F8qS2JQYnb\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Request for Quotation\",\"col\":3}},{\"id\":\"MX4Il3aEoz\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Supplier Quotation\",\"col\":3}},{\"id\":\"pzlfkzo0Oz\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Quotation\",\"col\":3}},{\"id\":\"IGHJQ8Y7S8\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Delivery Note\",\"col\":3}},{\"id\":\"N4wLzmV_K_\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Sales Order\",\"col\":3}},{\"id\":\"bZowMboo73\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Invoice\",\"col\":3}},{\"id\":\"JvbJbjLSES\",\"type\":\"spacer\",\"data\":{\"col\":12}},{\"id\":\"xlZJUZbO40\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\"><b>Purchase</b></span>\",\"col\":12}},{\"id\":\"NYawrHtLe3\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Purchase Order\",\"col\":3}},{\"id\":\"n1m7p_Jz_i\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Purchase Receipt\",\"col\":3}},{\"id\":\"x1ccOPHYok\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Purchase Invoice\",\"col\":3}},{\"id\":\"Qy6dtkq0Rs\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Material Request\",\"col\":3}},{\"id\":\"L-a5l5Zzo-\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Price List\",\"col\":3}},{\"id\":\"-U-YL3SIfO\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Supplier\",\"col\":3}},{\"id\":\"b25Zw4Ay0M\",\"type\":\"spacer\",\"data\":{\"col\":12}},{\"id\":\"EZMCxWyE4K\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\"><b>Customer</b></span>\",\"col\":12}},{\"id\":\"hOhvopzNln\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Customer\",\"col\":3}},{\"id\":\"3ldk2obFnE\",\"type\":\"spacer\",\"data\":{\"col\":12}},{\"id\":\"0DGu3nDkAP\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\"><b>Reports</b></span>\",\"col\":12}},{\"id\":\"-b_vU048AI\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Debtor Report\",\"col\":3}}]",
- "creation": "2024-05-23 15:16:10.126129",
+ "creation": "2025-03-04 12:46:57.751095",
  "custom_blocks": [],
  "docstatus": 0,
  "doctype": "Workspace",
@@ -12,7 +12,7 @@
  "is_hidden": 0,
  "label": "Sales and Service",
  "links": [],
- "modified": "2025-01-21 11:36:48.333602",
+ "modified": "2025-03-04 13:02:53.059454",
  "modified_by": "Administrator",
  "module": "Three Lions",
  "name": "Sales and Service",

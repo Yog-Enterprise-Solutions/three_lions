@@ -82,8 +82,15 @@ def get_data(filters):
 					remove_index = other_voucher.index(payment)
 					other_voucher.pop(remove_index)
 
-			sales_invoice_doc = frappe.db.get_value("Sales Invoice", {"name": gl["voucher_no"]},["po_no","remarks"], as_dict=1)
-			gl['remarks_s'] = sales_invoice_doc["remarks"]
+			sales_invoice_doc = frappe.db.get_value("Sales Invoice", {"name": gl["voucher_no"]},["po_no","remarks","custom_reference"], as_dict=1)
+			
+			if sales_invoice_doc["custom_reference"]:
+				gl['remarks_s'] = sales_invoice_doc["custom_reference"]
+			elif gl["remarks"].startswith("Against Customer Order"):
+				gl['remarks_s'] = ""
+			elif gl["remarks_s"] == "No Remarks":
+				gl['remarks_s'] = sales_invoice_doc["remarks"]
+
 			gl['sales_doc'] = sales_invoice_doc["po_no"]
 			
 		else:
@@ -103,7 +110,11 @@ def get_data(filters):
 		if currency not in cumulative_balance:
 			cumulative_balance[currency] = 0.0
 		cumulative_balance[currency] += current_row_balance
-		gl["balance"] = "{:,.3f}".format(cumulative_balance[currency])
+		
+		# Keep the original balance key as the current row balance,
+		# and create a new key for the cumulative balance
+		gl["balance"] = "{:,.3f}".format(current_row_balance)
+		gl["cumulative_balance"] = "{:,.3f}".format(cumulative_balance[currency])
 		
 		# Format debit and credit fields
 		gl["debit_in_transaction_currency"] = "{:,.3f}".format(debit)
@@ -119,7 +130,7 @@ def get_data(filters):
 		# Calculate the total debit, credit, and balance for the current currency
 		total_debit = sum(float(entry['debit_in_transaction_currency'].replace(',', '')) for entry in entries)
 		total_credit = sum(float(entry['credit_in_transaction_currency'].replace(',', '')) for entry in entries)
-		total_balance = sum(float(entry['balance'].replace(',', '')) for entry in entries)  # Remove commas before sum
+		total_balance = total_debit - total_credit
 		
 		# Dynamically create the header row for the current currency
 		header_row = {
@@ -128,7 +139,7 @@ def get_data(filters):
 			'due_date': 'Due.DATE',
 			'voucher_no': 'INV.NO',
 			'sales_doc': 'REF.NO',
-			'remarks_s': 'No Remarks 1',
+			'remarks_s': 'No Remarks',
 			'debit_in_transaction_currency': f'DEBIT({currency})',
 			'credit_in_transaction_currency': f'Credit ({currency})',
 			'balance': f'BALANCE ({currency})',
@@ -143,7 +154,7 @@ def get_data(filters):
 			'remarks_s': 'Total',
 			'debit_in_transaction_currency': "{:,.3f}".format(total_debit),
 			'credit_in_transaction_currency': "{:,.3f}".format(total_credit),
-			'balance': "{:,.3f}".format(total_balance),
+			'cumulative_balance': "{:,.3f}".format(total_balance),
 			'inv_age': None
 		}
 
@@ -211,7 +222,7 @@ def get_columns(filters):
 		},
 		{
 			"label":  ("BALANCE"),
-			"fieldname": "balance",
+			"fieldname": "cumulative_balance",
 			"fieldtype": "Data",
 			"width": 120,
 		},

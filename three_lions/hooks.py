@@ -134,9 +134,9 @@ doc_events = {
 	# "Leave Application": {
 	# 	"on_update": "three_lions.override.leave_application.loan_amount"
 	# },
-	"Sales Order": {
-		"on_submit": "three_lions.override.sales_order.project_based_on_sales_order"
-	},
+	# "Sales Order": {
+	# 	"on_submit": "three_lions.override.sales_order.project_based_on_sales_order"
+	# },
 	
 	# "Branch": {
 	# 	"on_update": "three_lions.override.branch.monthly_scheduler"

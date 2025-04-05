@@ -42,6 +42,12 @@ frappe.query_reports["Debtor Report"] = {
 			"label": __("Customer Full Name"),
 			"fieldtype": "Data",
 			"read_only": 1
-		}
+		},
+		{
+			"fieldname": "show_description",
+			"label": __("Print Description"),
+			"fieldtype": "Check",
+			"default": 0
+		},
 	]
 };

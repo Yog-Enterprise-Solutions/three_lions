@@ -4,7 +4,7 @@
 <head>
     <style>
         .print-format td, .print-format th {
-            padding: 5px !important;
+            padding: 3px !important;
         }
         .print-format {
             font-size: 10px; 
@@ -25,13 +25,13 @@
             border: 1px solid #000; /* Black table borders */
         }
         .table th {
-            padding: 8px;
+            padding: 5px;
             text-align: left;
             font-weight: bold;
             color: #000; /* Black column header text */
         }
         .table td {
-            padding: 8px;
+            padding: 5px;
             text-align: left;
             color: #000; /* Black table text */
         }
@@ -46,7 +46,7 @@
         }
         .indented-bold {
             font-weight: bold;
-            padding: 4px;
+            padding: 1px;
         }
     </style>
 </head>
@@ -149,7 +149,9 @@
                 <th style="text-align: center;">{%= __("INV.AGE") %}</th>
                 <th style="text-align: center;">{%= __("INV.NO") %}</th>
                 <th style="text-align: center;">{%= __("REF.NO") %}</th>
-                <th style="width: 25%">{%= __("Description") %}</th>
+                {% if filters.show_description %}
+                    <th style="width: 20%">{%= __("Description") %}</th>
+                {% endif %}
                 <th style="text-align: center;">{%= __("DEBIT") %} ({%= currency %})</th>
                 <th style="text-align: center;">{%= __("CREDIT") %} ({%= currency %})</th>
                 <th style="text-align: center;">{%= __("BALANCE") %} ({%= currency %})</th>
@@ -167,10 +169,12 @@
                     <td style="text-align: center;">{{ currencies[currency][i].inv_age || 0 }}</td>
                     <td style="text-align: center;">{{ currencies[currency][i].voucher_no || '' }}</td>
                     <td style="text-align: center;">{{ currencies[currency][i].sales_doc || '' }}</td>
-                    <td>{{ currencies[currency][i].remarks_s || '' }}</td>
+                    {% if filters.show_description %}
+                        <td>{{ currencies[currency][i].remarks_s || '' }}</td>
+                    {% endif %}
                     <td style="text-align: center;">{{ currencies[currency][i].debit_in_transaction_currency || 0 }}</td>
                     <td style="text-align: center;">{{ currencies[currency][i].credit_in_transaction_currency || 0 }}</td>
-                    <td style="text-align: center;">{{ currencies[currency][i].balance || 0 }}</td>
+                    <td style="text-align: center;">{{ currencies[currency][i].cumulative_balance || 0 }}</td>
                 </tr>
 
                 {% totalBalance += parseFloat(currencies[currency][i].balance.replace(/,/g, '')) || 0; %}
@@ -180,7 +184,11 @@
 
             <!-- Total balance row -->
             <tr>
-                <td colspan="6" class="text-right"><strong>Total Balance:</strong></td>
+                {% if filters.show_description %}
+                    <td colspan="6" class="text-right"><strong>Total Balance:</strong></td>
+                {% else %}
+                    <td colspan="5" class="text-right"><strong>Total Balance:</strong></td>
+                {% endif %}
                 <td style="text-align: center;"><b>{{ totalDebit.toFixed(3) }}</b></td>
                 <td style="text-align: center;"><b>{{ totalCredit.toFixed(3) }}</b></td>
                 <td style="text-align: center;"><b>{{ totalBalance.toFixed(3) }}</b></td>
