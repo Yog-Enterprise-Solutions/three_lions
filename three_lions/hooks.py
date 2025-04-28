@@ -12,7 +12,7 @@ app_license = "MIT"
 
 # include js, css files in header of desk.html
 # app_include_css = "/assets/three_lions/css/three_lions.css"
-app_include_js = "/public/js/tax_tempale_vat.js"
+# app_include_js = "/public/js/tax_tempale_vat.js"
 
 # include js, css files in header of web template
 # web_include_css = "/assets/three_lions/css/three_lions.css"

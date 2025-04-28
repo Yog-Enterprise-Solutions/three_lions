@@ -185,9 +185,9 @@
             <!-- Total balance row -->
             <tr>
                 {% if filters.show_description %}
-                    <td colspan="6" class="text-right"><strong>Total Balance:</strong></td>
+                    <td colspan="6" class="text-right" style="text-align: right;"><strong>Total Balance:</strong></td>
                 {% else %}
-                    <td colspan="5" class="text-right"><strong>Total Balance:</strong></td>
+                    <td colspan="5" class="text-right" style="text-align: right;"><strong>Total Balance:</strong></td>
                 {% endif %}
                 <td style="text-align: center;"><b>{{ totalDebit.toFixed(3) }}</b></td>
                 <td style="text-align: center;"><b>{{ totalCredit.toFixed(3) }}</b></td>
@@ -195,8 +195,48 @@
             </tr>
         </tbody>
     </table>
+    <table style="width: 100%; border: 1px solid black; border-collapse: collapse;">
+        <thead>
+            <tr>
+                <th style="text-align: center; border: 1px solid black;">0 - 30 Days</th>
+                <th style="text-align: center; border: 1px solid black;">31 - 60 Days</th>
+                <th style="text-align: center; border: 1px solid black;">61 - 90 Days</th>
+                <th style="text-align: center; border: 1px solid black;">91 - 120 Days</th>
+                <th style="text-align: center; border: 1px solid black;">121 - 150 Days</th>
+                <th style="text-align: center; border: 1px solid black;">151 - 180 Days</th>
+                <th style="text-align: center; border: 1px solid black;">181 - 360 Days</th>
+                <th style="text-align: center; border: 1px solid black;">>360 Days</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                {% let ageing_ranges = [
+                    {"label": "0-30", "min": 0, "max": 30},
+                    {"label": "31-60", "min": 31, "max": 60},
+                    {"label": "61-90", "min": 61, "max": 90},
+                    {"label": "91-120", "min": 91, "max": 120},
+                    {"label": "121-150", "min": 121, "max": 150},
+                    {"label": "151-180", "min": 151, "max": 180},
+                    {"label": "181-360", "min": 181, "max": 360},
+                    {"label": ">360", "min": 361, "max": null}
+                ]; %}
+
+                {% for (let range of ageing_ranges) { %}
+                    {% let range_total = 0; %}
+                    {% for (let i = 0; i < currencies[currency].length; i++) { %}
+                        {% let age = currencies[currency][i].inv_age || 0; %}
+                        {% if ((range.max === null && age >= range.min) || (age >= range.min && age <= range.max)) { %}
+                            {% range_total += parseFloat(currencies[currency][i].balance.replace(/,/g, '')) || 0; %}
+                        {% } %}
+                    {% } %}
+                    <td style="text-align: center; border: 1px solid black;">{{ range_total.toFixed(3) }}</td>
+                {% } %}
+            </tr>
+        </tbody>
+    </table>
 {% } %}
-<p class="text-right text-muted">Printed On {%= frappe.datetime.str_to_user(frappe.datetime.get_datetime_as_string()) %}</p>
+
+
 </body>
 
 </html>

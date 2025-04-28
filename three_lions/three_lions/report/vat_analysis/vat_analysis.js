@@ -1,6 +1,9 @@
-frappe.query_reports["Sales Vat Report"] = {
-    "filters": [
-        {
+// Copyright (c) 2025, yog and contributors
+// For license information, please see license.txt
+
+frappe.query_reports["VAT Analysis"] = {
+	"filters": [
+		{
             fieldname: "company",
             label: __("Company"),
             fieldtype: "Link",
@@ -68,8 +71,8 @@ frappe.query_reports["Sales Vat Report"] = {
             fieldname: "ledger",
             label: __("Ledger Account"),
             fieldtype: "Link",
-            reqd: 1,
-            default: "10201002 - VAT Payable - 3L",
+            options: "Account",
+            // default: "10201002 - VAT Payable - 3L",
         },
-    ]
+	]
 };

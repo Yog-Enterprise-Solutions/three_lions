@@ -4,9 +4,12 @@
 import frappe
 
 from datetime import datetime
+from frappe.utils import cint, cstr, flt, getdate, nowdate
 
 def execute(filters=None):
 	columns, data =get_columns(filters),get_data(filters)
+	# chart = get_chart_data(filters,data)
+
 	return columns, data
 
 def get_data(filters):
@@ -30,7 +33,7 @@ def get_data(filters):
 		SELECT 
 			transaction_currency,
 			posting_date, due_date, voucher_no, name, remarks,against_voucher_type,against_voucher,voucher_type,
-			debit_in_transaction_currency, credit_in_transaction_currency,
+			debit_in_transaction_currency, credit_in_transaction_currency,transaction_exchange_rate,
 
 			DATEDIFF(CURDATE(), posting_date) AS inv_age
 		FROM 
@@ -76,9 +79,16 @@ def get_data(filters):
 		gl['due_date'] = datetime.strftime(gl['due_date'], "%d-%m-%Y") if gl['due_date'] else None
 
 		if gl["voucher_type"] == "Sales Invoice":
+			sales_invoice_paid = frappe.db.get_value("Sales Invoice", {"name": gl["voucher_no"],"status":"Paid"},["name"], as_dict=1)
+			if sales_invoice_paid:
+				continue
 			for payment in other_voucher:
 				if payment["against_voucher"] == gl["voucher_no"]:
-					gl['credit_in_transaction_currency'] = float(gl['credit_in_transaction_currency']) + float(payment['credit_in_transaction_currency'])
+					if gl['transaction_currency'] != payment['transaction_currency']:
+						gl['credit_in_transaction_currency'] = float(gl['credit_in_transaction_currency']) + (float(payment['credit_in_transaction_currency']) / float(gl['transaction_exchange_rate']))
+					else:
+						gl['credit_in_transaction_currency'] = float(gl['credit_in_transaction_currency']) + float(payment['credit_in_transaction_currency'])
+					
 					remove_index = other_voucher.index(payment)
 					other_voucher.pop(remove_index)
 
@@ -106,6 +116,7 @@ def get_data(filters):
 		credit = float(gl["credit_in_transaction_currency"]) if gl["credit_in_transaction_currency"] else 0.0
 		current_row_balance = debit - credit
 
+
 		# Initialize cumulative balance for the currency if not already done
 		if currency not in cumulative_balance:
 			cumulative_balance[currency] = 0.0
@@ -125,6 +136,7 @@ def get_data(filters):
 		if current_row_balance != 0:
 			data_based_on_currency[currency].append(gl)
 
+	# Total columns for each currency
 	# Iterate over each currency in data_based_on_currency
 	for currency, entries in data_based_on_currency.items():
 		# Calculate the total debit, credit, and balance for the current currency
@@ -157,9 +169,10 @@ def get_data(filters):
 			'cumulative_balance': "{:,.3f}".format(total_balance),
 			'inv_age': None
 		}
-
+		aging_box = {'aging_data':make_aging_data(currency, entries)}
 		formatted_data.extend(entries)
 		formatted_data.append(total_row)
+		formatted_data.append(aging_box)
 	return formatted_data
 	
 def get_columns(filters):
@@ -281,3 +294,50 @@ def get_customer_contact(filters):
 
 	return linked_contact
 
+# def get_chart_data(filters, data):
+# 	labels, datasets = make_aging_data(filters, data)
+# 	chart = {
+# 		"data": {
+# 			"labels": labels,
+# 			"datasets": datasets,
+# 		},
+# 		"type": "percentage",
+# 	}
+# 	return chart
+
+def make_aging_data(currency, entries):
+	precision = cint(frappe.db.get_default("float_precision")) or 2
+	ageing_ranges = [
+		{"label": "0-30", "min": 0, "max": 30},
+		{"label": "31-60", "min": 31, "max": 60},
+		{"label": "61-90", "min": 61, "max": 90},
+		{"label": "91-120", "min": 91, "max": 120},
+		{"label": "121-150", "min": 121, "max": 150},
+		{"label": "151-180", "min": 151, "max": 180},
+		{"label": "181-360", "min": 181, "max": 360},
+		{"label": "360 and above", "min": 361, "max": None},
+	]
+
+	# Initialize dataset for each range and currency
+	ageing_data = {}
+	for row in entries:
+		if currency not in ageing_data:
+			ageing_data[currency] = {range["label"]: 0 for range in ageing_ranges}
+
+		inv_age = cint(row.get("inv_age", 0))
+		balance = flt(row.get("balance", 0).replace(',', '')) if row.get("balance") else 0
+		for range in ageing_ranges:
+			if range["min"] <= inv_age and (range["max"] is None or inv_age <= range["max"]):
+				ageing_data[currency][range["label"]] += balance
+				break
+
+	# Prepare chart data
+	labels = [range["label"] for range in ageing_ranges]
+	datasets = []
+	for currency, data in ageing_data.items():
+		datasets.append({
+			"name": currency,
+			"values": [round(data[label], precision) for label in labels],
+		})
+
+	return {"labels": labels, "datasets": datasets}

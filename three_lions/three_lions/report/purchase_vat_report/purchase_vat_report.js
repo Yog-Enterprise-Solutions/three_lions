@@ -49,5 +49,12 @@ frappe.query_reports["Purchase Vat Report"] = {
 			reqd: 1,
 			default: frappe.datetime.month_end(),
 		},
+		{
+            fieldname: "ledger",
+            label: __("Ledger Account"),
+            fieldtype: "Link",
+            reqd: 1,
+            default: "10107000 - VAT Receivable - 3L",
+        },
 	]
 };
