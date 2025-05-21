@@ -26,7 +26,7 @@ def check_or_create_tax_template(vat_percentage, docname, doctype,row):
             'company': '3 Lions',
             'taxes': [
                 {
-                    'tax_type': 'VAT - 3L',
+                    'tax_type': '10201002 - VAT Payable - 3L',
                     'tax_rate': vat_percentage
                 }
             ]

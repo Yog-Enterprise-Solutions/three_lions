@@ -152,9 +152,9 @@
                 {% if filters.show_description %}
                     <th style="width: 20%">{%= __("Description") %}</th>
                 {% endif %}
-                <th style="text-align: center;">{%= __("DEBIT") %} ({%= currency %})</th>
-                <th style="text-align: center;">{%= __("CREDIT") %} ({%= currency %})</th>
-                <th style="text-align: center;">{%= __("BALANCE") %} ({%= currency %})</th>
+                <th style="text-align: center;">{%= __("DEBIT") %} <br>({%= currency %})</th>
+                <th style="text-align: center;">{%= __("CREDIT") %} <br>({%= currency %})</th>
+                <th style="text-align: center;">{%= __("BALANCE") %} <br>({%= currency %})</th>
             </tr>
         </thead>
         <tbody>
@@ -198,14 +198,14 @@
     <table style="width: 100%; border: 1px solid black; border-collapse: collapse;">
         <thead>
             <tr>
-                <th style="text-align: center; border: 1px solid black;">0 - 30 Days</th>
-                <th style="text-align: center; border: 1px solid black;">31 - 60 Days</th>
-                <th style="text-align: center; border: 1px solid black;">61 - 90 Days</th>
-                <th style="text-align: center; border: 1px solid black;">91 - 120 Days</th>
-                <th style="text-align: center; border: 1px solid black;">121 - 150 Days</th>
-                <th style="text-align: center; border: 1px solid black;">151 - 180 Days</th>
-                <th style="text-align: center; border: 1px solid black;">181 - 360 Days</th>
-                <th style="text-align: center; border: 1px solid black;">>360 Days</th>
+                <td style="text-align: center; border: 1px solid black; font-weight: bold;">0 - 30 Days</td>
+                <td style="text-align: center; border: 1px solid black; font-weight: bold;">31 - 60 Days</td>
+                <td style="text-align: center; border: 1px solid black; font-weight: bold;">61 - 90 Days</td>
+                <td style="text-align: center; border: 1px solid black; font-weight: bold;">91 - 120 Days</td>
+                <td style="text-align: center; border: 1px solid black; font-weight: bold;">121 - 150 Days</td>
+                <td style="text-align: center; border: 1px solid black; font-weight: bold;">151 - 180 Days</td>
+                <td style="text-align: center; border: 1px solid black; font-weight: bold;">181 - 360 Days</td>
+                <td style="text-align: center; border: 1px solid black; font-weight: bold;">>360 Days</td>
             </tr>
         </thead>
         <tbody>
@@ -229,7 +229,7 @@
                             {% range_total += parseFloat(currencies[currency][i].balance.replace(/,/g, '')) || 0; %}
                         {% } %}
                     {% } %}
-                    <td style="text-align: center; border: 1px solid black;">{{ range_total.toFixed(3) }}</td>
+                    <td style="text-align: center; border: 1px solid black; font-weight: bold;">{{ range_total.toFixed(3) }}</td>
                 {% } %}
             </tr>
         </tbody>

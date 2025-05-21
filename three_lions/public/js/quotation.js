@@ -22,17 +22,20 @@ frappe.ui.form.on('Quotation Item', {
                         // Prepare new tax entry
                         const newEntry = {
                             charge_type: "On Net Total",
-                            account_head: "VAT - 3L",
+                            account_head: "10201002 - VAT Payable - 3L",
                             description: "VAT",
                             cost_center: "Main - 3L",
-                            account_currency: "BHD"
+                            account_currency: "BHD",
+                            rate:row.custom_vat,
+                            tax_amount: row.custom_vat * row.amount / 100,
+                            tax_category: "Output Vat",
                         };
 
                         // Check if entry already exists
-                        let exists = frm.doc.taxes && frm.doc.taxes.some(tax => 
-                            tax.account_head === newEntry.account_head &&
-                            tax.charge_type === newEntry.charge_type
-                        );
+                        // let exists = frm.doc.taxes && frm.doc.taxes.some(tax => 
+                        //     tax.account_head === newEntry.account_head &&
+                        //     tax.charge_type === newEntry.charge_type
+                        // );
 
                         // If the entry does not exist, add it
                         if (!exists) {

@@ -1,0 +1,101 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "SIV-.######",
+ "creation": "2025-05-13 14:13:09.539701",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "sales_invoice",
+  "customer",
+  "column_break_oxbj",
+  "customer_name",
+  "section_break_zdzq",
+  "items",
+  "section_break_jchm",
+  "grand_total",
+  "column_break_tfzj",
+  "print_hide_total"
+ ],
+ "fields": [
+  {
+   "fieldname": "sales_invoice",
+   "fieldtype": "Link",
+   "label": "Sales Invoice",
+   "options": "Sales Invoice"
+  },
+  {
+   "fetch_from": "sales_invoice.customer",
+   "fieldname": "customer",
+   "fieldtype": "Link",
+   "label": "Customer",
+   "options": "Customer"
+  },
+  {
+   "fieldname": "column_break_oxbj",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fetch_from": "sales_invoice.customer_name",
+   "fieldname": "customer_name",
+   "fieldtype": "Data",
+   "label": "Customer Name"
+  },
+  {
+   "fieldname": "section_break_zdzq",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "items",
+   "fieldtype": "Table",
+   "label": "Items",
+   "options": "Sales Invoice Item"
+  },
+  {
+   "fieldname": "section_break_jchm",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fetch_from": "sales_invoice.grand_total",
+   "fieldname": "grand_total",
+   "fieldtype": "Currency",
+   "label": "Grand Total",
+   "precision": "3"
+  },
+  {
+   "fieldname": "column_break_tfzj",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "print_hide_total",
+   "fieldtype": "Currency",
+   "label": "Print Hide Total",
+   "precision": "3"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2025-05-13 21:44:32.075963",
+ "modified_by": "Administrator",
+ "module": "Three Lions",
+ "name": "Service Invoice Value",
+ "naming_rule": "Expression (old style)",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

@@ -12,6 +12,7 @@ def get_columns():
 		{"fieldname": "posting_date", "label": "Date", "fieldtype": "Date", "width": 120},
 		{"fieldname": "voucher_no", "label": "Voucher Number", "fieldtype": "Data", "width": 140},
 		{"fieldname": "voucher_type", "label": "Voucher Type", "fieldtype": "Data", "width": 120},
+		{"fieldname": "user_remark", "label": "Remarks", "fieldtype": "Data", "width": 150},
 		{"fieldname": "remarks", "label": "Description", "fieldtype": "Data", "width": 150},
 		{"fieldname": "transaction_currency", "label": "Currency", "fieldtype": "Data", "width": 90},
 		{"fieldname": "total", "label": "Taxable Amount", "fieldtype": "Float", "width": 150, "precision": 3},
@@ -40,6 +41,9 @@ def get_data(filters=None):
 	)
 
 	for entry in gl_entries:
+		if entry.voucher_type == "Journal Entry":
+			user_remarks = frappe.get_value("Journal Entry", entry.voucher_no, "user_remark")
+
 		vat_amount = entry.credit if entry.credit > 0 else entry.debit
 		if entry.remarks and entry.remarks.startswith("Note:"):
 			entry.remarks = entry.remarks[6:]
@@ -50,6 +54,7 @@ def get_data(filters=None):
 			"voucher_type": entry.voucher_type,
 			"voucher_no": entry.voucher_no,
 			"remarks": entry.remarks,
+			"user_remark": user_remarks if user_remarks else "",
 			"transaction_currency": entry.transaction_currency,
 			"total": (vat_amount/10)*100,  # Assuming VAT is 10%
 			"rate": 10,  # Rate is not directly available in GL Entry
