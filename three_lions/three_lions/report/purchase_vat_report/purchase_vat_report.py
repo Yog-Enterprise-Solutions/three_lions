@@ -28,7 +28,7 @@ def get_data(filters=None):
 	if filters.get("from_date") and filters.get("to_date"):
 		date_filters["posting_date"] = ["between", [filters["from_date"], filters["to_date"]]]
 	date_filters["is_cancelled"] = 0
-	# date_filters["transaction_currency"]="BHD"
+	date_filters["transaction_currency"]="BHD"
 	date_filters["account"] = filters.get("ledger")
 	date_filters["voucher_type"] = "Purchase Invoice"
 

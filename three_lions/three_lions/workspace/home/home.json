@@ -1,0 +1,92 @@
+{
+ "charts": [],
+ "content": "[{\"id\":\"oTAPXeKnRp\",\"type\":\"spacer\",\"data\":{\"col\":4}},{\"id\":\"zDPc_EATrE\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h3\\\"><b>Sales &amp; Service Department</b></span>\",\"col\":5}},{\"id\":\"QcH_UQ_Ekc\",\"type\":\"spacer\",\"data\":{\"col\":3}},{\"id\":\"g8rp6m_VT5\",\"type\":\"number_card\",\"data\":{\"number_card_name\":\"Enquiry Form\",\"col\":3}},{\"id\":\"uMJ4RGEKdz\",\"type\":\"number_card\",\"data\":{\"number_card_name\":\"Quotation\",\"col\":3}},{\"id\":\"KTzb6TESH5\",\"type\":\"number_card\",\"data\":{\"number_card_name\":\"Sales Order\",\"col\":3}},{\"id\":\"syU5Lx_dGy\",\"type\":\"number_card\",\"data\":{\"number_card_name\":\"Delivery Note\",\"col\":3}},{\"id\":\"1OquUrdRiW\",\"type\":\"number_card\",\"data\":{\"number_card_name\":\"Sales Invoice\",\"col\":3}},{\"id\":\"JvbJbjLSES\",\"type\":\"spacer\",\"data\":{\"col\":12}},{\"id\":\"ettnPoMdNX\",\"type\":\"spacer\",\"data\":{\"col\":4}},{\"id\":\"xlZJUZbO40\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h3\\\"><b>    Purchase Department</b></span>\",\"col\":4}},{\"id\":\"b25Zw4Ay0M\",\"type\":\"spacer\",\"data\":{\"col\":4}},{\"id\":\"T1twqa7g0F\",\"type\":\"number_card\",\"data\":{\"number_card_name\":\"Purchase Order\",\"col\":4}},{\"id\":\"Fa1X0QDPj4\",\"type\":\"number_card\",\"data\":{\"number_card_name\":\"Purchase Receipt\",\"col\":4}},{\"id\":\"kL6t0u7JGw\",\"type\":\"number_card\",\"data\":{\"number_card_name\":\"Purchase Invoice\",\"col\":4}},{\"id\":\"EZMCxWyE4K\",\"type\":\"header\",\"data\":{\"text\":\"<span style=\\\"font-size: 18px; letter-spacing: 0.18px;\\\"><b>Masters</b></span>\",\"col\":12}},{\"id\":\"BAgKR7lc5g\",\"type\":\"number_card\",\"data\":{\"number_card_name\":\"Active Customers\",\"col\":4}},{\"id\":\"uOHArlUjba\",\"type\":\"number_card\",\"data\":{\"number_card_name\":\"Active Suppliers\",\"col\":4}},{\"id\":\"p-ZnuZ-ky5\",\"type\":\"number_card\",\"data\":{\"number_card_name\":\"Total Active Items\",\"col\":4}},{\"id\":\"3ldk2obFnE\",\"type\":\"spacer\",\"data\":{\"col\":12}},{\"id\":\"0DGu3nDkAP\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\"><b>Reports</b></span>\",\"col\":12}},{\"id\":\"-b_vU048AI\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Debtor Report\",\"col\":3}}]",
+ "creation": "2025-03-04 12:46:57.751095",
+ "custom_blocks": [],
+ "docstatus": 0,
+ "doctype": "Workspace",
+ "for_user": "",
+ "hide_custom": 0,
+ "icon": "today",
+ "idx": 0,
+ "indicator_color": "",
+ "is_hidden": 0,
+ "label": "Home",
+ "links": [],
+ "modified": "2025-12-04 13:12:35.688867",
+ "modified_by": "Administrator",
+ "module": "Three Lions",
+ "name": "Home",
+ "number_cards": [
+  {
+   "label": "Purchase Order",
+   "number_card_name": "Purchase Order"
+  },
+  {
+   "label": "Enquiry Form",
+   "number_card_name": "Enquiry Form"
+  },
+  {
+   "label": "Purchase Receipt",
+   "number_card_name": "Purchase Receipt"
+  },
+  {
+   "label": "Quotation",
+   "number_card_name": "Quotation"
+  },
+  {
+   "label": "Sales Order",
+   "number_card_name": "Sales Order"
+  },
+  {
+   "label": "Purchase Invoice",
+   "number_card_name": "Purchase Invoice"
+  },
+  {
+   "label": "Active Customers",
+   "number_card_name": "Active Customers"
+  },
+  {
+   "label": "Delivery Note",
+   "number_card_name": "Delivery Note"
+  },
+  {
+   "label": "Sales Invoice",
+   "number_card_name": "Sales Invoice"
+  },
+  {
+   "label": "Active Suppliers",
+   "number_card_name": "Active Suppliers"
+  },
+  {
+   "label": "Total Active Items",
+   "number_card_name": "Total Active Items"
+  }
+ ],
+ "owner": "Administrator",
+ "parent_page": "",
+ "public": 1,
+ "quick_lists": [],
+ "roles": [
+  {
+   "role": "Sales"
+  },
+  {
+   "role": "Service"
+  },
+  {
+   "role": "All"
+  }
+ ],
+ "sequence_id": 1.0,
+ "shortcuts": [
+  {
+   "color": "Grey",
+   "doc_view": "List",
+   "label": "Debtor Report",
+   "link_to": "Debtor Report",
+   "type": "Report"
+  }
+ ],
+ "title": "Home"
+}

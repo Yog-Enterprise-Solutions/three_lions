@@ -1,59 +1,58 @@
-frappe.ui.form.on('Quotation Item', {
-    
-    custom_vat: function(frm, cdt, cdn) {
-        let row = locals[cdt][cdn];
-        if (row.custom_vat) {
-            frappe.call({
-                method: 'three_lions.override.quotation.check_or_create_tax_template',
-                args: {
-                    vat_percentage: row.custom_vat,
-                    docname: frm.doc.name,
-                    doctype: frm.doc.doctype,
-                    row: row
-                },
-                callback: function(response) {
-                    if (response.message) {
-                        row.item_tax_template = response.message;
-                        frm.refresh_field('items');
-
-                        // Set tax category
-                        frm.doc.tax_category = 'Output Vat';
-
-                        // Prepare new tax entry
-                        const newEntry = {
-                            charge_type: "On Net Total",
-                            account_head: "10201002 - VAT Payable - 3L",
-                            description: "VAT",
-                            cost_center: "Main - 3L",
-                            account_currency: "BHD",
-                            rate:row.custom_vat,
-                            tax_amount: row.custom_vat * row.amount / 100,
-                            tax_category: "Output Vat",
-                        };
-
-                        // Check if entry already exists
-                        // let exists = frm.doc.taxes && frm.doc.taxes.some(tax => 
-                        //     tax.account_head === newEntry.account_head &&
-                        //     tax.charge_type === newEntry.charge_type
-                        // );
-
-                        // If the entry does not exist, add it
-                        if (!exists) {
-                            frm.add_child('taxes', newEntry);
-                            frm.refresh_field('taxes');
-                        }
-
-                        // Save the document
-                        frm.save();
-                    }
-                },
-                error: function(error) {
-                    // Handle errors here
-                    console.error('Error while creating tax template:', error);
-                }
-            });
+frappe.ui.form.on('Quotation', {
+    validate: function (frm) {
+        for (let row of frm.doc.items){
+            row.custom_vat_on_amount = row.custom_vat * row.net_amount / 100;
         }
+        // if(frm.doc.currency=='BHD'){
+
+            handleVATAndTax(frm)
+        // }
+    }
+});
+frappe.ui.form.on('Quotation Item', {
+    custom_vat: function (frm, cdt, cdn) {
+        let row = locals[cdt][cdn];
+        row.custom_vat_on_amount = row.custom_vat * row.net_amount / 100;
+        frm.refresh_field('items');
+        // if(frm.doc.currency=='BHD'){
+
+            handleVATAndTax(frm, cdt, cdn)
+        // }
     }
 });
 
+function handleVATAndTax(frm) {
+    let total_tax = 0;
+    let actual_rate = 0;
+    frm.doc.items.forEach(item => {
+        if (item.custom_vat_on_amount) {
+            total_tax += item.custom_vat_on_amount;
+        }
+    });
 
+    // Prepare new tax entry
+    const newEntry = {
+        charge_type: "Actual",
+        account_head: "10201002 - VAT Payable - 3L",
+        description: "VAT",
+        cost_center: "Main - 3L",
+        account_currency: "BHD",
+        rate: actual_rate,
+        tax_amount: total_tax,
+    };
+    // Check if entry already exists, else add it
+    let exists = false;
+    if (frm.doc.taxes && frm.doc.taxes.length) {
+        for (let tax of frm.doc.taxes) {
+            if (tax.account_head === newEntry.account_head && tax.charge_type === newEntry.charge_type) {
+                tax.tax_amount = newEntry.tax_amount;
+                exists = true;
+                break;
+            }
+        }
+    }
+    if (!exists) {
+        frm.add_child('taxes', newEntry);
+    }
+    frm.refresh_field('taxes');
+}

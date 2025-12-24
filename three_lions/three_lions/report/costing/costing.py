@@ -48,7 +48,7 @@ def execute(filters=None):
 				"gross_profit",
 				"gross_profit_percent",
 				"project",
-				# "sales_men",
+				"sales_men",
 			],
 			"item_code": [
 				"item_code",
@@ -178,12 +178,6 @@ def get_data_when_grouped_by_invoice(columns, gross_profit_data, filters, group_
 	columns[0] = "Sales Invoice:Link/Item:300"
 	# removing Item Code and Item Name columns
 	del columns[4:6]
-	columns[-1] = {
-		"fieldname": "sales_men",
-		"label": _("Salesmen"),
-		"fieldtype": "Data",
-		"width": 100,
-	}
 
 	total_base_amount = 0
 	total_buying_amount = 0
@@ -199,12 +193,17 @@ def get_data_when_grouped_by_invoice(columns, gross_profit_data, filters, group_
 		row.indent = src.indent
 		row.parent_invoice = src.parent_invoice
 		row.currency = filters.currency
-		sales_men = frappe.db.get_value("Sales Invoice", src.parent_invoice, "sales_men")
-
-		row.sales_men = sales_men if sales_men else ""
-		sales_men_doc = sales_men
+		
+		# Process all columns from group_wise_columns
 		for col in group_wise_columns.get(scrub(filters.group_by)):
-			row[column_names[col]] = src.get(col)
+			if col == "sales_men":
+				# Only set sales_men for parent nodes (invoice level), not child nodes (item level)
+				if src.indent == 0:  # Parent node (invoice level)
+					row[column_names[col]] = src.sales_men if src.sales_men else ""
+				else:  # Child node (item level)
+					row[column_names[col]] = ""
+			else:
+				row[column_names[col]] = src.get(col)
 
 		data.append(row)
 
@@ -224,8 +223,7 @@ def get_data_when_grouped_by_invoice(columns, gross_profit_data, filters, group_
 					cint(frappe.db.get_default("currency_precision")) or 3,
 				)
 				if total_base_amount
-				else 0,
-				"sales_men":sales_men_doc
+				else 0
 			}
 		)
 	)
@@ -459,6 +457,7 @@ def get_column_names():
 			"gross_profit": "gross_profit",
 			"gross_profit_percent": "gross_profit_%",
 			"project": "project",
+			"sales_men": "sales_men",
 		}
 	)
 
@@ -919,7 +918,8 @@ class GrossProfitGenerator:
 				`tabSales Invoice Item`.delivery_note, `tabSales Invoice Item`.stock_qty as qty,
 				`tabSales Invoice Item`.base_net_rate, `tabSales Invoice Item`.base_net_amount,
 				`tabSales Invoice Item`.name as "item_row", `tabSales Invoice`.is_return,
-				`tabSales Invoice Item`.cost_center, `tabSales Invoice Item`.serial_and_batch_bundle
+				`tabSales Invoice Item`.cost_center, `tabSales Invoice Item`.serial_and_batch_bundle,
+				`tabSales Invoice`.sales_men
 				{sales_person_cols}
 				{payment_term_cols}
 			from
@@ -1020,6 +1020,7 @@ class GrossProfitGenerator:
 				"is_return": row.is_return,
 				"cost_center": row.cost_center,
 				"base_net_amount": row.invoice_base_net_total,
+				"sales_men": row.sales_men,
 			}
 		)
 

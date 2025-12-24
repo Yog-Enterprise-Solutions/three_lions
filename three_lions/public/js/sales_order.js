@@ -6,61 +6,63 @@ frappe.ui.form.on('Sales Order', {
         } else {
             frm.set_df_property("custom_qtn_ref_no", "hidden", 0);
         }
+    },
+     validate: function (frm) {
+        for (let row of frm.doc.items){
+            row.custom_vat_on_amount = row.custom_vat * row.net_amount / 100;
+        }
+        // if(frm.doc.currency=='BHD'){
+
+            handleVATAndTax(frm)
+        // }
+
     }
 });
-
-
-
-
 
 frappe.ui.form.on('Sales Order Item', {
-    custom_vat: function(frm, cdt, cdn) {
+    custom_vat: function (frm, cdt, cdn) {
         let row = locals[cdt][cdn];
-        if (row.custom_vat) {
-            // console.log(row.custom_vat, "uuu");
+        row.custom_vat_on_amount = row.custom_vat * row.net_amount / 100;
+        frm.refresh_field('items');
+        // if(frm.doc.currency=='BHD'){
 
-            frappe.call({
-                method: 'three_lions.override.quotation.check_or_create_tax_template',
-                args: {
-                    vat_percentage: row.custom_vat,
-                    docname: frm.doc.name,
-                    doctype: frm.doc.doctype,
-                    row:row
-                },
-                callback: function(response) {
-                    if (response.message) {
-                        row.item_tax_template = response.message;
-                        frm.refresh_field('items'); 
-                          // -----add in taxes---------------
-                          frm.doc.tax_category='Output Vat'
-                          const newEntry = {
-                              charge_type: "On Net Total",
-                              account_head: "VAT - 3L",
-                              description: "VAT",
-                              cost_center: "Main - 3L",
-                              account_currency: "BHD",
-                          };
-                          if (frm.doc.taxes){
-                          let exists = false;
-                          console.log("pppp",frm.doc.currency)
-                          frm.doc.taxes.forEach(function(row) {
-                              if (row.account_head === newEntry.account_head && row.charge_type === newEntry.charge_type) {
-                                  exists = true;
-                              }
-                          });
-                  
-                          // If the entry does not exist, add it
-                          if (!exists) {
-                              const childTable = frm.add_child('taxes', newEntry);
-                              frm.refresh_field('taxes');
-                          }}
-                          else{ const childTable = frm.add_child('taxes', newEntry);
-                              frm.refresh_field('taxes');}
-                         frm.save()
-                    }
-                }
-            });
-        }
+            handleVATAndTax(frm, cdt, cdn)
+        // }
     }
 });
 
+function handleVATAndTax(frm) {
+    let total_tax = 0;
+    let actual_rate = 0;
+    frm.doc.items.forEach(item => {
+        if (item.custom_vat_on_amount) {
+            total_tax += item.custom_vat_on_amount;
+        }
+    });
+
+    // Prepare new tax entry
+    const newEntry = {
+        charge_type: "Actual",
+        account_head: "10201002 - VAT Payable - 3L",
+        description: "VAT",
+        cost_center: "Main - 3L",
+        account_currency: "BHD",
+        rate: actual_rate,
+        tax_amount: total_tax,
+    };
+    // Check if entry already exists, else add it
+    let exists = false;
+    if (frm.doc.taxes && frm.doc.taxes.length) {
+        for (let tax of frm.doc.taxes) {
+            if (tax.account_head === newEntry.account_head && tax.charge_type === newEntry.charge_type) {
+                tax.tax_amount = newEntry.tax_amount;
+                exists = true;
+                break;
+            }
+        }
+    }
+    if (!exists) {
+        frm.add_child('taxes', newEntry);
+    }
+    frm.refresh_field('taxes');
+}
