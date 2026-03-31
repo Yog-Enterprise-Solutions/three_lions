@@ -87,13 +87,11 @@ def get_data(filters):
 		) AS receipt_data
 			ON receipt_data.purchase_order = po.name
 		LEFT JOIN (
+			-- Path 1: PI → Payment Entry (existing payment path)
 			SELECT
 				pii.purchase_order,
 				MAX(pe.posting_date) AS payment_date,
-				CASE
-				WHEN COUNT(pe.name) = 0 THEN NULL
-				ELSE SUM(COALESCE(per.allocated_amount, 0))
-			END AS payment_amount
+				SUM(COALESCE(per.allocated_amount, 0)) AS payment_amount
 			FROM `tabPurchase Invoice Item` pii
 			INNER JOIN `tabPurchase Invoice` pi
 				ON pi.name = pii.parent
@@ -106,6 +104,36 @@ def get_data(filters):
 				AND pe.docstatus = 1
 			WHERE IFNULL(pii.purchase_order, '') != ''
 			GROUP BY pii.purchase_order
+
+			UNION ALL
+
+			-- Path 2: Direct PE → PO (advance/direct payments to PO)
+			SELECT
+				per.reference_name AS purchase_order,
+				MAX(pe.posting_date) AS payment_date,
+				SUM(COALESCE(per.allocated_amount, 0)) AS payment_amount
+			FROM `tabPayment Entry Reference` per
+			INNER JOIN `tabPayment Entry` pe
+				ON pe.name = per.parent
+				AND pe.docstatus = 1
+			WHERE per.reference_doctype = 'Purchase Order'
+			AND IFNULL(per.reference_name, '') != ''
+			GROUP BY per.reference_name
+
+			UNION ALL
+
+			-- Path 3: JE → PO (journal entry direct payment to PO)
+			SELECT
+				jea.reference_name AS purchase_order,
+				MAX(je.posting_date) AS payment_date,
+				SUM(COALESCE(jea.debit, 0) + COALESCE(jea.credit, 0)) AS payment_amount
+			FROM `tabJournal Entry Account` jea
+			INNER JOIN `tabJournal Entry` je
+				ON je.name = jea.parent
+				AND je.docstatus = 1
+			WHERE jea.reference_type = 'Purchase Order'
+			AND IFNULL(jea.reference_name, '') != ''
+			GROUP BY jea.reference_name
 		) AS payment_data
 			ON payment_data.purchase_order = po.name
 		LEFT JOIN (
