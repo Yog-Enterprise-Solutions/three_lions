@@ -17,11 +17,18 @@ def get_columns():
 		{"label": "SUPPLIER NAME", "fieldname": "supplier_name", "fieldtype": "Data", "width": 170},
 		{"label": "PO DATE", "fieldname": "po_date", "fieldtype": "Date", "width": 110},
 		{"label": "AMOUNT", "fieldname": "po_amount", "fieldtype": "Currency", "width": 120},
-		{"label": "PAYMENT DATE", "fieldname": "payment_date", "fieldtype": "Date", "width": 120},
-		{"label": "PAYMENT AMOUNT", "fieldname": "payment_amount", "fieldtype": "Currency", "width": 140},
+		{"label": "ADV PAYMENT DATE", "fieldname": "payment_date", "fieldtype": "Date", "width": 130},
+		{"label": "ADV PAYMENT AMOUNT", "fieldname": "payment_amount", "fieldtype": "Currency", "width": 160},
 		{"label": "RECEIPT NO", "fieldname": "receipt_no", "fieldtype": "Link", "options": "Purchase Receipt", "width": 130},
 		{"label": "DATE", "fieldname": "receipt_date", "fieldtype": "Date", "width": 100},
 		{"label": "AMOUNT", "fieldname": "receipt_amount", "fieldtype": "Currency", "width": 120},
+		{"label": "PURCHASE INVOICE NO", "fieldname": "purchase_invoice_no", "fieldtype": "Data", "width": 190},
+		{"label": "PURCHASE INVOICE DATE", "fieldname": "purchase_invoice_date", "fieldtype": "Date", "width": 170},
+		{"label": "PURCHASE INVOICE AMOUNT", "fieldname": "purchase_invoice_amount", "fieldtype": "Currency", "width": 190},
+		{"label": "PI PAYMENT REF", "fieldname": "pi_payment_reference", "fieldtype": "Data", "width": 180},
+		{"label": "PI PAYMENT TYPE", "fieldname": "pi_payment_type", "fieldtype": "Data", "width": 150},
+		{"label": "PI PAYMENT DATE", "fieldname": "pi_payment_date", "fieldtype": "Date", "width": 150},
+		{"label": "PI PAYMENT AMOUNT", "fieldname": "pi_payment_amount", "fieldtype": "Currency", "width": 180},
 		{"label": "CUSTOMER PO NO", "fieldname": "customer_po_no", "fieldtype": "Data", "width": 150},
 		{"label": "CUSTOMER PO AMOUNT", "fieldname": "customer_po_amount", "fieldtype": "Currency", "width": 170},
 		{"label": "CUSTOMER DELIVERY NO", "fieldname": "customer_delivery_no", "fieldtype": "Link", "options": "Delivery Note", "width": 170},
@@ -57,12 +64,19 @@ def get_data(filters):
 			po.name AS po_no,
 			po.supplier_name,
 			po.transaction_date AS po_date,
-			po.grand_total AS po_amount,
-			payment_data.payment_date,
-			payment_data.payment_amount,
+			po.base_grand_total AS po_amount,
+			advance_payment_data.payment_date,
+			advance_payment_data.payment_amount,
 			receipt_data.receipt_no,
 			receipt_data.receipt_date,
 			receipt_data.receipt_amount,
+			purchase_invoice_data.purchase_invoice_no,
+			purchase_invoice_data.purchase_invoice_date,
+			purchase_invoice_data.purchase_invoice_amount,
+			purchase_invoice_payment_data.pi_payment_reference,
+			purchase_invoice_payment_data.pi_payment_type,
+			purchase_invoice_payment_data.pi_payment_date,
+			purchase_invoice_payment_data.pi_payment_amount,
 			quotation_data.customer_po_no,
 			quotation_data.customer_po_amount,
 			delivery_data.customer_delivery_no,
@@ -87,55 +101,101 @@ def get_data(filters):
 		) AS receipt_data
 			ON receipt_data.purchase_order = po.name
 		LEFT JOIN (
-			-- Path 1: PI → Payment Entry (existing payment path)
+			SELECT
+				payment_union.purchase_order,
+				MAX(payment_union.payment_date) AS payment_date,
+				SUM(payment_union.payment_amount) AS payment_amount
+			FROM (
+				SELECT
+					per.reference_name AS purchase_order,
+					pe.posting_date AS payment_date,
+					COALESCE(per.allocated_amount, 0) AS payment_amount
+				FROM `tabPayment Entry Reference` per
+				INNER JOIN `tabPayment Entry` pe
+					ON pe.name = per.parent
+					AND pe.docstatus = 1
+				WHERE per.reference_doctype = 'Purchase Order'
+					AND IFNULL(per.reference_name, '') != ''
+
+				UNION ALL
+
+				SELECT
+					jea.reference_name AS purchase_order,
+					je.posting_date AS payment_date,
+					GREATEST(ABS(COALESCE(jea.debit, 0)), ABS(COALESCE(jea.credit, 0))) AS payment_amount
+				FROM `tabJournal Entry Account` jea
+				INNER JOIN `tabJournal Entry` je
+					ON je.name = jea.parent
+					AND je.docstatus = 1
+				WHERE jea.reference_type = 'Purchase Order'
+					AND IFNULL(jea.reference_name, '') != ''
+			) AS payment_union
+			GROUP BY payment_union.purchase_order
+		) AS advance_payment_data
+			ON advance_payment_data.purchase_order = po.name
+		LEFT JOIN (
 			SELECT
 				pii.purchase_order,
-				MAX(pe.posting_date) AS payment_date,
-				SUM(COALESCE(per.allocated_amount, 0)) AS payment_amount
+				GROUP_CONCAT(DISTINCT pi.name ORDER BY pi.posting_date SEPARATOR ', ') AS purchase_invoice_no,
+				MAX(pi.posting_date) AS purchase_invoice_date,
+				SUM(DISTINCT COALESCE(pi.base_grand_total, 0)) AS purchase_invoice_amount
 			FROM `tabPurchase Invoice Item` pii
 			INNER JOIN `tabPurchase Invoice` pi
 				ON pi.name = pii.parent
 				AND pi.docstatus = 1
-			LEFT JOIN `tabPayment Entry Reference` per
-				ON per.reference_doctype = 'Purchase Invoice'
-				AND per.reference_name = pi.name
-			LEFT JOIN `tabPayment Entry` pe
-				ON pe.name = per.parent
-				AND pe.docstatus = 1
 			WHERE IFNULL(pii.purchase_order, '') != ''
 			GROUP BY pii.purchase_order
-
-			UNION ALL
-
-			-- Path 2: Direct PE → PO (advance/direct payments to PO)
+		) AS purchase_invoice_data
+			ON purchase_invoice_data.purchase_order = po.name
+		LEFT JOIN (
 			SELECT
-				per.reference_name AS purchase_order,
-				MAX(pe.posting_date) AS payment_date,
-				SUM(COALESCE(per.allocated_amount, 0)) AS payment_amount
-			FROM `tabPayment Entry Reference` per
-			INNER JOIN `tabPayment Entry` pe
-				ON pe.name = per.parent
-				AND pe.docstatus = 1
-			WHERE per.reference_doctype = 'Purchase Order'
-			AND IFNULL(per.reference_name, '') != ''
-			GROUP BY per.reference_name
+				payment_against_invoice.purchase_order,
+				GROUP_CONCAT(DISTINCT payment_against_invoice.payment_reference ORDER BY payment_against_invoice.payment_reference SEPARATOR ', ') AS pi_payment_reference,
+				GROUP_CONCAT(DISTINCT payment_against_invoice.payment_type ORDER BY payment_against_invoice.payment_type SEPARATOR ', ') AS pi_payment_type,
+				MAX(payment_against_invoice.payment_date) AS pi_payment_date,
+				SUM(payment_against_invoice.payment_amount) AS pi_payment_amount
+			FROM (
+				SELECT
+					pii.purchase_order,
+					pe.name AS payment_reference,
+					'Payment Entry' AS payment_type,
+					pe.posting_date AS payment_date,
+					COALESCE(per.allocated_amount, 0) AS payment_amount
+				FROM `tabPurchase Invoice Item` pii
+				INNER JOIN `tabPurchase Invoice` pi
+					ON pi.name = pii.parent
+					AND pi.docstatus = 1
+				INNER JOIN `tabPayment Entry Reference` per
+					ON per.reference_doctype = 'Purchase Invoice'
+					AND per.reference_name = pi.name
+				INNER JOIN `tabPayment Entry` pe
+					ON pe.name = per.parent
+					AND pe.docstatus = 1
+				WHERE IFNULL(pii.purchase_order, '') != ''
 
-			UNION ALL
+				UNION ALL
 
-			-- Path 3: JE → PO (journal entry direct payment to PO)
-			SELECT
-				jea.reference_name AS purchase_order,
-				MAX(je.posting_date) AS payment_date,
-				SUM(COALESCE(jea.debit, 0) + COALESCE(jea.credit, 0)) AS payment_amount
-			FROM `tabJournal Entry Account` jea
-			INNER JOIN `tabJournal Entry` je
-				ON je.name = jea.parent
-				AND je.docstatus = 1
-			WHERE jea.reference_type = 'Purchase Order'
-			AND IFNULL(jea.reference_name, '') != ''
-			GROUP BY jea.reference_name
-		) AS payment_data
-			ON payment_data.purchase_order = po.name
+				SELECT
+					pii.purchase_order,
+					je.name AS payment_reference,
+					'Journal Entry' AS payment_type,
+					je.posting_date AS payment_date,
+					GREATEST(ABS(COALESCE(jea.debit, 0)), ABS(COALESCE(jea.credit, 0))) AS payment_amount
+				FROM `tabPurchase Invoice Item` pii
+				INNER JOIN `tabPurchase Invoice` pi
+					ON pi.name = pii.parent
+					AND pi.docstatus = 1
+				INNER JOIN `tabJournal Entry Account` jea
+					ON jea.reference_type = 'Purchase Invoice'
+					AND jea.reference_name = pi.name
+				INNER JOIN `tabJournal Entry` je
+					ON je.name = jea.parent
+					AND je.docstatus = 1
+				WHERE IFNULL(pii.purchase_order, '') != ''
+			) AS payment_against_invoice
+			GROUP BY payment_against_invoice.purchase_order
+		) AS purchase_invoice_payment_data
+			ON purchase_invoice_payment_data.purchase_order = po.name
 		LEFT JOIN (
 			SELECT
 				qt_link.enquiry_ref_no,
