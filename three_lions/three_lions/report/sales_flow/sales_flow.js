@@ -25,7 +25,9 @@ const SALES_FLOW_HEADER_SEQUENCE = [
 	{ backgroundColor: "#c00000", color: "#ffffff" },
 	{ backgroundColor: "#f4b183", color: "#000000" },
 	{ backgroundColor: "#f4b183", color: "#000000" },
-	{ backgroundColor: "#f4b183", color: "#000000" }
+	{ backgroundColor: "#f4b183", color: "#000000" },
+	{ backgroundColor: "#d9b3ff", color: "#000000" },
+	{ backgroundColor: "#d9b3ff", color: "#000000" }
 ];
 
 function applySalesFlowHeaderStyles(datatable) {

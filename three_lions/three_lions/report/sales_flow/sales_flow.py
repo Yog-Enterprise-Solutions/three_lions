@@ -14,6 +14,7 @@ def execute(filters=None):
 def get_columns():
 	return [
 		{"label": "PO NO", "fieldname": "po_no", "fieldtype": "Link", "options": "Purchase Order", "width": 120},
+		{"label": "IN QTY", "fieldname": "in_qty", "fieldtype": "Float", "width": 120},
 		{"label": "SUPPLIER NAME", "fieldname": "supplier_name", "fieldtype": "Data", "width": 170},
 		{"label": "PO DATE", "fieldname": "po_date", "fieldtype": "Date", "width": 110},
 		{"label": "AMOUNT", "fieldname": "po_amount", "fieldtype": "Currency", "width": 120},
@@ -34,6 +35,7 @@ def get_columns():
 		{"label": "CUSTOMER DELIVERY NO", "fieldname": "customer_delivery_no", "fieldtype": "Link", "options": "Delivery Note", "width": 170},
 		{"label": "CUSTOMER DELIVERY DATE", "fieldname": "customer_delivery_date", "fieldtype": "Date", "width": 170},
 		{"label": "CUSTOMER DELIVERY AMOUNT", "fieldname": "customer_delivery_amount", "fieldtype": "Currency", "width": 190},
+		{"label": "OUT QTY", "fieldname": "out_qty", "fieldtype": "Float", "width": 120},
 		{"label": "CUSTOMER INVOICE NO", "fieldname": "customer_invoice_no", "fieldtype": "Link", "options": "Sales Invoice", "width": 170},
 		{"label": "CUSTOMER INVOICE DATE", "fieldname": "customer_invoice_date", "fieldtype": "Date", "width": 170},
 		{"label": "CUSTOMER INVOICE AMOUNT", "fieldname": "customer_invoice_amount", "fieldtype": "Currency", "width": 190},
@@ -84,7 +86,9 @@ def get_data(filters):
 			delivery_data.customer_delivery_amount,
 			invoice_data.customer_invoice_no,
 			invoice_data.customer_invoice_date,
-			invoice_data.customer_invoice_amount
+			invoice_data.customer_invoice_amount,
+			in_qty_data.in_qty,
+			out_qty_data.out_qty
 		FROM `tabPurchase Order` po
 		LEFT JOIN (
 			SELECT
@@ -243,6 +247,59 @@ def get_data(filters):
 			GROUP BY si.custom_qtn_ref_no
 		) AS invoice_data
 			ON invoice_data.quotation_name = quotation_data.quotation_name
+		LEFT JOIN (
+			SELECT in_src.po_name, SUM(in_src.in_qty) AS in_qty
+			FROM (
+				SELECT pri.purchase_order AS po_name,
+				       SUM(sle.actual_qty) AS in_qty
+				FROM `tabStock Ledger Entry` sle
+				JOIN `tabPurchase Receipt Item` pri ON pri.name = sle.voucher_detail_no
+				WHERE sle.voucher_type = 'Purchase Receipt'
+				  AND sle.is_cancelled = 0
+				  AND IFNULL(pri.purchase_order, '') != ''
+				GROUP BY pri.purchase_order
+
+				UNION ALL
+
+				SELECT pii.purchase_order AS po_name,
+				       SUM(sle.actual_qty) AS in_qty
+				FROM `tabStock Ledger Entry` sle
+				JOIN `tabPurchase Invoice Item` pii ON pii.name = sle.voucher_detail_no
+				JOIN `tabPurchase Invoice` pi ON pi.name = pii.parent AND pi.update_stock = 1
+				WHERE sle.voucher_type = 'Purchase Invoice'
+				  AND sle.is_cancelled = 0
+				  AND IFNULL(pii.purchase_order, '') != ''
+				GROUP BY pii.purchase_order
+			) AS in_src
+			GROUP BY in_src.po_name
+		) AS in_qty_data ON in_qty_data.po_name = po.name
+		LEFT JOIN (
+			SELECT out_src.qtn_ref, SUM(out_src.out_qty) AS out_qty
+			FROM (
+				SELECT dn.custom_qtn_ref_no AS qtn_ref,
+				       SUM(ABS(sle.actual_qty)) AS out_qty
+				FROM `tabStock Ledger Entry` sle
+				JOIN `tabDelivery Note` dn ON dn.name = sle.voucher_no AND dn.docstatus = 1
+				WHERE sle.voucher_type = 'Delivery Note'
+				  AND sle.is_cancelled = 0
+				  AND sle.actual_qty < 0
+				  AND IFNULL(dn.custom_qtn_ref_no, '') != ''
+				GROUP BY dn.custom_qtn_ref_no
+
+				UNION ALL
+
+				SELECT si.custom_qtn_ref_no AS qtn_ref,
+				       SUM(ABS(sle.actual_qty)) AS out_qty
+				FROM `tabStock Ledger Entry` sle
+				JOIN `tabSales Invoice` si ON si.name = sle.voucher_no AND si.docstatus = 1
+				WHERE sle.voucher_type = 'Sales Invoice'
+				  AND sle.is_cancelled = 0
+				  AND sle.actual_qty < 0
+				  AND IFNULL(si.custom_qtn_ref_no, '') != ''
+				GROUP BY si.custom_qtn_ref_no
+			) AS out_src
+			GROUP BY out_src.qtn_ref
+		) AS out_qty_data ON out_qty_data.qtn_ref = quotation_data.quotation_name
 		WHERE {conditions_sql}
 		ORDER BY po.transaction_date DESC, po.name DESC
 		""",
