@@ -12,18 +12,20 @@
   {
    "fieldname": "ref_no",
    "fieldtype": "Link",
+   "in_list_view": 1,
    "label": "Ref No",
-   "options": "Opportunity"
+   "options": "Opportunity",
+   "reqd": 1
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2026-05-23 13:14:09.800248",
+ "modified": "2026-05-27 15:08:24.422820",
  "modified_by": "Administrator",
  "module": "Three Lions",
- "name": "PO Reference Items",
+ "name": "Enquiry Ref No",
  "owner": "Administrator",
  "permissions": [],
  "row_format": "Dynamic",

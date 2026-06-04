@@ -5,5 +5,5 @@
 from frappe.model.document import Document
 
 
-class POReferenceItems(Document):
+class EnquiryRefNo(Document):
 	pass
