@@ -2,32 +2,35 @@
 // For license information, please see license.txt
 
 const SALES_FLOW_HEADER_SEQUENCE = [
-	{ backgroundColor: "#fff200", color: "#000000" },
-	{ backgroundColor: "#fff200", color: "#000000" },
-	{ backgroundColor: "#fff200", color: "#000000" },
-	{ backgroundColor: "#fff200", color: "#000000" },
-	{ backgroundColor: "#92d050", color: "#000000" },
-	{ backgroundColor: "#92d050", color: "#000000" },
-	{ backgroundColor: "#00b0f0", color: "#000000" },
-	{ backgroundColor: "#00b0f0", color: "#000000" },
-	{ backgroundColor: "#00b0f0", color: "#000000" },
-	{ backgroundColor: "#fce4d6", color: "#000000" },
-	{ backgroundColor: "#fce4d6", color: "#000000" },
-	{ backgroundColor: "#fce4d6", color: "#000000" },
-	{ backgroundColor: "#c6e0b4", color: "#000000" },
-	{ backgroundColor: "#c6e0b4", color: "#000000" },
-	{ backgroundColor: "#c6e0b4", color: "#000000" },
-	{ backgroundColor: "#c6e0b4", color: "#000000" },
-	{ backgroundColor: "#0070c0", color: "#ffffff" },
-	{ backgroundColor: "#0070c0", color: "#ffffff" },
-	{ backgroundColor: "#c00000", color: "#ffffff" },
-	{ backgroundColor: "#c00000", color: "#ffffff" },
-	{ backgroundColor: "#c00000", color: "#ffffff" },
-	{ backgroundColor: "#f4b183", color: "#000000" },
-	{ backgroundColor: "#f4b183", color: "#000000" },
-	{ backgroundColor: "#f4b183", color: "#000000" },
-	{ backgroundColor: "#d9b3ff", color: "#000000" },
-	{ backgroundColor: "#d9b3ff", color: "#000000" }
+	{ backgroundColor: "#fff200", color: "#000000" }, // Enquiry Ref. No.
+	{ backgroundColor: "#92d050", color: "#000000" }, // PO No.
+	{ backgroundColor: "#92d050", color: "#000000" }, // In Qty
+	{ backgroundColor: "#92d050", color: "#000000" }, // Supplier Name
+	{ backgroundColor: "#92d050", color: "#000000" }, // PO Date
+	{ backgroundColor: "#92d050", color: "#000000" }, // PO Amount
+	{ backgroundColor: "#00b0f0", color: "#000000" }, // Adv. Payment Date
+	{ backgroundColor: "#00b0f0", color: "#000000" }, // Adv. Payment Amount
+	{ backgroundColor: "#00b0f0", color: "#000000" }, // Receipt No.
+	{ backgroundColor: "#fce4d6", color: "#000000" }, // Receipt Date
+	{ backgroundColor: "#fce4d6", color: "#000000" }, // Receipt Amount
+	{ backgroundColor: "#fce4d6", color: "#000000" }, // Purchase Invoice No.
+	{ backgroundColor: "#c6e0b4", color: "#000000" }, // Purchase Invoice Date
+	{ backgroundColor: "#c6e0b4", color: "#000000" }, // Purchase Invoice Amount
+	{ backgroundColor: "#c6e0b4", color: "#000000" }, // PI Payment Ref.
+	{ backgroundColor: "#c6e0b4", color: "#000000" }, // PI Payment Type
+	{ backgroundColor: "#c6e0b4", color: "#000000" }, // PI Payment Date
+	{ backgroundColor: "#c6e0b4", color: "#000000" }, // PI Payment Amount
+	{ backgroundColor: "#0070c0", color: "#ffffff" }, // Quotation Ref. No.
+	{ backgroundColor: "#0070c0", color: "#ffffff" }, // Customer Name
+	{ backgroundColor: "#c00000", color: "#ffffff" }, // Customer PO No.
+	{ backgroundColor: "#c00000", color: "#ffffff" }, // Customer PO Amount
+	{ backgroundColor: "#f4b183", color: "#000000" }, // Customer Delivery No.
+	{ backgroundColor: "#f4b183", color: "#000000" }, // Customer Delivery Date
+	{ backgroundColor: "#f4b183", color: "#000000" }, // Customer Delivery Amount
+	{ backgroundColor: "#d9b3ff", color: "#000000" }, // Out Qty
+	{ backgroundColor: "#d9b3ff", color: "#000000" }, // Customer Invoice No.
+	{ backgroundColor: "#d9b3ff", color: "#000000" }, // Customer Invoice Date
+	{ backgroundColor: "#d9b3ff", color: "#000000" }  // Customer Invoice Amount
 ];
 
 function applySalesFlowHeaderStyles(datatable) {
@@ -48,7 +51,7 @@ function applySalesFlowHeaderStyles(datatable) {
 				"background-color": style.backgroundColor,
 				color: style.color,
 				"font-weight": "700",
-				"text-transform": "uppercase",
+				// "text-transform": "uppercase",
 				"border-right": "1px solid #d1d5db"
 			});
 		});
