@@ -137,8 +137,13 @@ def get_data(filters):
 			data_based_on_currency[currency].append(gl)
 
 	# Total columns for each currency
-	# Iterate over each currency in data_based_on_currency
-	for currency, entries in data_based_on_currency.items():
+	# Iterate over each currency in the preferred order: BHD first, then USD, then others
+	currency_priority = {"BHD": 0, "USD": 1}
+	for currency in sorted(
+		data_based_on_currency,
+		key=lambda cur: (currency_priority.get((cur or "").upper(), 99), (cur or "").upper())
+	):
+		entries = data_based_on_currency[currency]
 		# Calculate the total debit, credit, and balance for the current currency
 		total_debit = sum(float(entry['debit_in_transaction_currency'].replace(',', '')) for entry in entries)
 		total_credit = sum(float(entry['credit_in_transaction_currency'].replace(',', '')) for entry in entries)

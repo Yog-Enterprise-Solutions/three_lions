@@ -16,6 +16,7 @@ def get_columns():
 		{"label": "Enquiry Ref. No.", "fieldname": "ref_nos", "fieldtype": "Data", "width": 200},
 		{"label": "PO No.", "fieldname": "po_no", "fieldtype": "Link", "options": "Purchase Order", "width": 120},
 		{"label": "In Qty", "fieldname": "in_qty", "fieldtype": "Float", "width": 120},
+		{"label": "Out Qty", "fieldname": "out_qty", "fieldtype": "Float", "width": 120},
 		{"label": "Supplier Name", "fieldname": "supplier_name", "fieldtype": "Data", "width": 170},
 		{"label": "PO Date", "fieldname": "po_date", "fieldtype": "Date", "width": 110},
 		{"label": "PO Amount", "fieldname": "po_amount", "fieldtype": "Currency", "width": 120},
@@ -38,9 +39,9 @@ def get_columns():
 		{"label": "Customer Delivery No.", "fieldname": "customer_delivery_no", "fieldtype": "Link", "options": "Delivery Note", "width": 170},
 		{"label": "Customer Delivery Date", "fieldname": "customer_delivery_date", "fieldtype": "Date", "width": 170},
 		{"label": "Customer Delivery Amount", "fieldname": "customer_delivery_amount", "fieldtype": "Currency", "width": 190},
-		{"label": "Out Qty", "fieldname": "out_qty", "fieldtype": "Float", "width": 120},
 		{"label": "Customer Invoice No.", "fieldname": "customer_invoice_no", "fieldtype": "Link", "options": "Sales Invoice", "width": 170},
 		{"label": "Customer Invoice Date", "fieldname": "customer_invoice_date", "fieldtype": "Date", "width": 170},
+		{"label":"Customer Invoice Qty", "fieldname": "customer_invoice_qty", "fieldtype": "Float", "width": 170},
 		{"label": "Customer Invoice Amount", "fieldname": "customer_invoice_amount", "fieldtype": "Currency", "width": 190},
 	]
 
@@ -126,6 +127,7 @@ def get_sales_flow_for_quotation(qtn_name):
 		SELECT
 			MAX(si.name) AS customer_invoice_no,
 			MAX(si.posting_date) AS customer_invoice_date,
+			SUM(COALESCE(sii.qty, 0)) AS customer_invoice_qty,
 			SUM(COALESCE(sii.amount, 0)) AS customer_invoice_amount
 		FROM `tabSales Invoice` si
 		INNER JOIN `tabSales Invoice Item` sii
@@ -146,6 +148,7 @@ def get_sales_flow_for_quotation(qtn_name):
 		"customer_delivery_amount": delivery_row.get("customer_delivery_amount"),
 		"customer_invoice_no": invoice_row.get("customer_invoice_no"),
 		"customer_invoice_date": invoice_row.get("customer_invoice_date"),
+		"customer_invoice_qty": invoice_row.get("customer_invoice_qty"),
 		"customer_invoice_amount": invoice_row.get("customer_invoice_amount"),
 		"out_qty": get_out_qty(qtn_name),
 	}
